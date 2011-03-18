@@ -1,0 +1,34 @@
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="data-app.css" />
+</head>
+<body>
+<wicket:panel>
+
+<form wicket:id="signInForm" class="labelAbove">
+
+	<div wicket:id="highFormSocket" />
+
+	<div class="row">
+		<label wicket:id="username-label">Username</label>
+		<span wicket:id="username-border"><input wicket:id="username" type="text" value="foo@goo.moo" /></span>
+	</div>
+	<div class="row">
+		<label wicket:id="password-label">Password</label>
+		<span wicket:id="password-border"><input wicket:id="password" type="password" value="password" /></span>
+	</div>
+	<div class="row">
+		<input wicket:id="rememberMe" id="rememberMe"type="checkbox" />
+		<label style="display:inline" for="rememberMe"><span wicket:id="rememberMe-text">Always sign in automatically</span></label>
+	</div>
+
+	<div wicket:id="lowFormSocket" />
+
+	<p> <input type="submit" name="submit" wicket:message="value:data.auth.sign_in" value="Sign in"/> </p>
+
+</form>
+	
+</wicket:panel>
+</body>
+
+</html>

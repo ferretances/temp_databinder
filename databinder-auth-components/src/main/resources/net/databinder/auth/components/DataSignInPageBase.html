@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+<title wicket:id="title">Please sign in</title>
+<link wicket:id="dataStylesheet" rel="stylesheet" type="text/css" href="../../../../../../../../databinder-components/src/main/resources/net/databinder/components/DataStyleSheet.css" />
+<wicket:link><link rel="stylesheet" type="text/css" href="DataSignInPage.css" /></wicket:link>
+</head>
+<body>
+
+<div id="box">
+	
+	<p wicket:id="profileLinkWrapper">
+		<span wicket:id="text">Don't have an account?</span>
+		<a wicket:id="profileLink" href="DataRegisterPanel.html"><span wicket:id="text">Register now</span></a>.
+	</p>
+	
+	<p wicket:id="signinLinkWrapper">
+		<span wicket:id="text">Already have an account?</span>
+		<a wicket:id="signinLink" href="DataSignInPanel.html"><span wicket:id="text">Sign in</span></a>.
+	</p>
+	
+	<div wicket:id="signinSocket">
+	Sign in goes here
+	</div>
+	
+	<div wicket:id="profileSocket">
+	Profile goes here
+	</div>
+	
+</div>
+</body>
+</html>
