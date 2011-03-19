@@ -3,36 +3,41 @@ package net.databinder.jpa.conv.components;
 
 import java.util.HashMap;
 
+import javax.persistence.EntityManager;
+
 import org.apache.wicket.markup.html.WebPage;
-import org.hibernate.classic.Session;
 
 public class ConversationPage extends WebPage implements IConversationPage {
-	private HashMap<Object, Session> conversationSessions = new HashMap<Object, Session>();
-	
-	public ConversationPage() {
-	}
-	
-	public ConversationPage(Session conversationSession) {
-		setConversationSession(null);
-	}
 
-	public ConversationPage(Object key, Session conversationSession) {
-		setConversationSession(key, conversationSession);
-	}
-	
-	public Session getConversationSession(Object key) {
-		return conversationSessions.get(key);
-	}
-	
-	public void setConversationSession(Object key, Session conversationSession) {
-		conversationSessions.put(key, conversationSession);
-	}
+  private final HashMap<Object, EntityManager> conversationEntityManager =
+    new HashMap<Object, EntityManager>();
 
-	public Session getConversationSession() {
-		return getConversationSession(null);
-	}
+  public ConversationPage() {
+  }
 
-	public void setConversationSession(Session conversationSession) {
-		setConversationSession(null, conversationSession);
-	}
+  public ConversationPage(final EntityManager em) {
+    setConversationEntityManager(null);
+  }
+
+  public ConversationPage(final Object key, final EntityManager em) {
+    setConversationEntityManager(key, em);
+  }
+
+  public EntityManager getConversationEntityManger(final Object key) {
+    return conversationEntityManager.get(key);
+  }
+
+  public void setConversationEntityManager(final Object key,
+      final EntityManager em) {
+    conversationEntityManager.put(key, em);
+  }
+
+  public EntityManager getConversationEntityManager() {
+    return getConversationEntityManger(null);
+  }
+
+  public void setConversationEntityManager(final EntityManager em) {
+    setConversationEntityManager(null, em);
+  }
+
 }

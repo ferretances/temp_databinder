@@ -20,9 +20,7 @@ import javax.persistence.EntityManagerFactory;
 import org.apache.wicket.Application;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.WicketRuntimeException;
-import org.hibernate.SessionFactory;
 import org.hibernate.classic.Session;
-import org.hibernate.context.ManagedSessionContext;
 
 /**
  * Provides access to application-bound Hibernate session factories and current
@@ -69,16 +67,16 @@ public class Databinder {
   }
 
   /**
-   * @param persistenceUnitName or null for the default factory
+   * @param persistenceUnit or null for the default factory
    * @return {@link EntityManager} bound to current thread
    */
-  public static EntityManager getEntityManager(final String persistenceUnitName) {
-    dataSessionRequested(persistenceUnitName);
-    return getEntityManagerFactory(persistenceUnitName).createEntityManager();
+  public static EntityManager getEntityManager(final String persistenceUnit) {
+    dataSessionRequested(persistenceUnit);
+    return getEntityManagerFactory(persistenceUnit).createEntityManager();
   }
 
-  public static Session getHibernateSession(final String persistenceUnitName) {
-    return getEntityManager(persistenceUnitName).unwrap(Session.class);
+  public static Session getHibernateSession(final String persistenceUnit) {
+    return getEntityManager(persistenceUnit).unwrap(Session.class);
   }
 
   public static Session getHibernateSession() {
@@ -93,14 +91,12 @@ public class Databinder {
   }
 
   /**
-   * @param persistenceUnitName or null for the default factory
+   * @param persistenceUnit or null for the default factory
    * @return true if a session is bound for the keyed factory
    */
-  public static boolean hasEntityManagerBound(final String persistenceUnitName) {
-    final SessionFactory unwrap =
-      getEntityManagerFactory(persistenceUnitName).createEntityManager()
-      .unwrap(Session.class).getSessionFactory();
-    return ManagedSessionContext.hasBind(unwrap);
+  public static boolean hasEntityManagerBound(final String persistenceUnit) {
+    return ManagedEntityManagerContext
+    .hasBind(getEntityManagerFactory(persistenceUnit));
   }
 
   /**
@@ -134,9 +130,9 @@ public class Databinder {
    * ManagedSessionContext. With JTA or other forms of current session lookup a
    * wrapping session will not be detected and a new one will always be created.
    * @param unit work to be performed in thread-bound session
-   * @see SessionUnit
+   * @see EntityManagerUnit
    */
-  public static Object ensureSession(final SessionUnit unit) {
+  public static Object ensureSession(final EntityManagerUnit unit) {
     return ensureSession(unit, null);
   }
 
@@ -153,29 +149,28 @@ public class Databinder {
    * wrapping session will not be detected and a new one will always be created.
    * @param unit work to be performed in thread-bound session
    * @param key or null for the default factory
-   * @see SessionUnit
+   * @see EntityManagerUnit
    */
-  public static Object ensureSession(final SessionUnit unit, final String key) {
+  public static Object ensureSession(final EntityManagerUnit unit,
+      final String key) {
     dataSessionRequested(key);
-    final SessionFactory sf =
-      getEntityManagerFactory(key).createEntityManager()
-      .unwrap(Session.class).getSessionFactory();
-    if (ManagedSessionContext.hasBind(sf)) {
-      return unit.run(getEntityManager(key).unwrap(Session.class));
+    final EntityManagerFactory emf = getEntityManagerFactory(key);
+    if (ManagedEntityManagerContext.hasBind(emf)) {
+      return unit.run(getEntityManager(key));
     }
-    final org.hibernate.classic.Session sess = sf.openSession();
+    final EntityManager em = emf.createEntityManager();
     try {
-      sess.beginTransaction();
-      ManagedSessionContext.bind(sess);
-      return unit.run(sess);
+      em.getTransaction().begin();
+      ManagedEntityManagerContext.bind(em);
+      return unit.run(em);
     } finally {
       try {
-        if (sess.getTransaction().isActive()) {
-          sess.getTransaction().rollback();
+        if (em.getTransaction().isActive()) {
+          em.getTransaction().rollback();
         }
       } finally {
-        sess.close();
-        ManagedSessionContext.unbind(sf);
+        em.close();
+        ManagedEntityManagerContext.unbind(emf);
       }
     }
   }

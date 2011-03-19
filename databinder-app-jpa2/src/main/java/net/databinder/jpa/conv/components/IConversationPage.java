@@ -1,8 +1,10 @@
 package net.databinder.jpa.conv.components;
 
-import org.hibernate.classic.Session;
+import javax.persistence.EntityManager;
 
 public interface IConversationPage {
-	public Session getConversationSession(Object key);
-	public void setConversationSession(Object key, Session conversationSession);
+
+  public EntityManager getConversationEntityManger(Object key);
+
+  public void setConversationEntityManager(Object key, EntityManager em);
 }

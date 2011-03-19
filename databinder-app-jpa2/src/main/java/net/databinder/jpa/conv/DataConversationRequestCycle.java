@@ -18,8 +18,12 @@
 
 package net.databinder.jpa.conv;
 
+import javax.persistence.EntityManager;
+import javax.persistence.FlushModeType;
+
 import net.databinder.jpa.DataRequestCycle;
 import net.databinder.jpa.Databinder;
+import net.databinder.jpa.ManagedEntityManagerContext;
 import net.databinder.jpa.conv.components.IConversationPage;
 
 import org.apache.wicket.Page;
@@ -29,7 +33,6 @@ import org.apache.wicket.protocol.http.WebRequest;
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.classic.Session;
-import org.hibernate.context.ManagedSessionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +67,7 @@ public class DataConversationRequestCycle extends DataRequestCycle {
    * session if appropriate. Does nothing if current page is not yet available.
    * @param key factory key object, or null for the default factory
    */
-  public void dataSessionRequested(final String key) {
+  public void dataEntityMangerRequested(final String key) {
     Page page = getResponsePage();
     if (page == null) {
       page = getRequest().getPage();
@@ -73,7 +76,7 @@ public class DataConversationRequestCycle extends DataRequestCycle {
     if (page == null) {
       final Class<?> pageClass = getResponsePageClass();
       if (pageClass != null) {
-        openHibernateSession(key);
+        openEntityManager(key);
         // set to manual if we are going to a conv. page
         if (IConversationPage.class.isAssignableFrom(pageClass)) {
           Databinder.getHibernateSession(key).setFlushMode(FlushMode.MANUAL);
@@ -86,13 +89,13 @@ public class DataConversationRequestCycle extends DataRequestCycle {
     if (page instanceof IConversationPage) {
       // look for existing session
       final IConversationPage convPage = (IConversationPage) page;
-      org.hibernate.classic.Session sess = convPage.getConversationSession(key);
+      EntityManager em = convPage.getConversationEntityManger(key);
 
       // if usable session exists, try to open txn, bind, and return
-      if (sess != null && sess.isOpen()) {
+      if (em != null && em.isOpen()) {
         try {
-          sess.beginTransaction();
-          ManagedSessionContext.bind(sess);
+          em.getTransaction().begin();
+          ManagedEntityManagerContext.bind(em);
           keys.add(key);
           return;
         } catch (final HibernateException e) {
@@ -101,13 +104,13 @@ public class DataConversationRequestCycle extends DataRequestCycle {
         }
       }
       // else start new one and set in page
-      sess = openHibernateSession(key);
-      sess.setFlushMode(FlushMode.MANUAL);
-      ((IConversationPage) page).setConversationSession(key, sess);
+      em = openEntityManager(key);
+      em.setFlushMode(FlushModeType.COMMIT);
+      ((IConversationPage) page).setConversationEntityManager(key, em);
       return;
     }
     // start new standard session
-    openHibernateSession(key);
+    openEntityManager(key);
   }
 
   /**
@@ -117,14 +120,14 @@ public class DataConversationRequestCycle extends DataRequestCycle {
   @Override
   protected void onEndRequest() {
     for (final String key : keys) {
-      if (!ManagedSessionContext.hasBind(Databinder.getHibernateSession(key)
-          .getSessionFactory())) {
+      if (!ManagedEntityManagerContext.hasBind(Databinder
+          .getEntityManagerFactory())) {
         return;
       }
-      org.hibernate.classic.Session sess = Databinder.getHibernateSession(key);
+      EntityManager em = Databinder.getEntityManager(key);
       boolean transactionComitted = false;
-      if (sess.getTransaction().isActive()) {
-        sess.getTransaction().rollback();
+      if (em.getTransaction().isActive()) {
+        em.getTransaction().rollback();
       } else {
         transactionComitted = true;
       }
@@ -136,16 +139,17 @@ public class DataConversationRequestCycle extends DataRequestCycle {
         if (page instanceof IConversationPage) {
           final IConversationPage convPage = (IConversationPage) page;
           // close if not dirty contains no changes
-          if (transactionComitted && !sess.isDirty()) {
-            sess.close();
-            sess = null;
+          // TODO: if (transactionComitted && !em.Dirty()) {
+          if (transactionComitted) {
+            em.close();
+            em = null;
           }
-          convPage.setConversationSession(key, sess);
+          convPage.setConversationEntityManager(key, em);
         } else {
-          sess.close();
+          em.close();
         }
       }
-      ManagedSessionContext.unbind(Databinder.getHibernateSession(key)
+      ManagedEntityManagerContext.unbind(Databinder.getHibernateSession(key)
           .getSessionFactory());
     }
   }
@@ -165,7 +169,7 @@ public class DataConversationRequestCycle extends DataRequestCycle {
           }
         } finally {
           sess.close();
-          ManagedSessionContext.unbind(Databinder.getHibernateSession(key)
+          ManagedEntityManagerContext.unbind(Databinder.getHibernateSession(key)
               .getSessionFactory());
         }
       }

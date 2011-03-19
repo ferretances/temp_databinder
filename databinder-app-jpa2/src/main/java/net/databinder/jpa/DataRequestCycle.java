@@ -20,15 +20,15 @@ package net.databinder.jpa;
 
 import java.util.HashSet;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+
 import net.databinder.CookieRequestCycle;
 
 import org.apache.wicket.Page;
 import org.apache.wicket.Response;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.protocol.http.WebRequest;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.context.ManagedSessionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,17 +56,17 @@ JPARequestCycle {
   }
 
   /** Roll back active transactions and close session. */
-  protected void closeSession(final String key) {
-    final Session sess = Databinder.getHibernateSession(key);
+  protected void closeEntityManager(final String key) {
+    final EntityManager em = Databinder.getEntityManager(key);
 
-    if (sess.isOpen()) {
+    if (em.isOpen()) {
       try {
-        if (sess.getTransaction().isActive()) {
+        if (em.getTransaction().isActive()) {
           log.debug("Rolling back uncomitted transaction.");
-          sess.getTransaction().rollback();
+          em.getTransaction().rollback();
         }
       } finally {
-        sess.close();
+        em.close();
       }
     }
   }
@@ -76,7 +76,7 @@ JPARequestCycle {
    * exist. Opens a new thread-bound Hibernate session.
    */
   public void dataEntityManagerRequested(final String key) {
-    openHibernateSession(key);
+    openEntityManager(key);
   }
 
   /**
@@ -84,13 +84,12 @@ JPARequestCycle {
    * @param key object, or null for the default factory
    * @return newly opened session
    */
-  protected org.hibernate.classic.Session openHibernateSession(final String key) {
-    final org.hibernate.classic.Session sess =
-      Databinder.getHibernateSession().getSessionFactory().openSession();
-    sess.beginTransaction();
-    ManagedSessionContext.bind(sess);
+  protected EntityManager openEntityManager(final String key) {
+    final EntityManager em = Databinder.getEntityManager();
+    em.getTransaction().begin();
+    ManagedEntityManagerContext.bind(em);
     keys.add(key);
-    return sess;
+    return em;
   }
 
   /**
@@ -101,11 +100,10 @@ JPARequestCycle {
   @Override
   protected void onEndRequest() {
     for (final String key : keys) {
-      final SessionFactory sf =
-        Databinder.getHibernateSession(key).getSessionFactory();
-      if (ManagedSessionContext.hasBind(sf)) {
-        closeSession(key);
-        ManagedSessionContext.unbind(sf);
+      final EntityManagerFactory emf = Databinder.getEntityManagerFactory(key);
+      if (ManagedEntityManagerContext.hasBind(emf)) {
+        closeEntityManager(key);
+        ManagedEntityManagerContext.unbind(emf);
       }
     }
   }
