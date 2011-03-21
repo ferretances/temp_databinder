@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
  *
  * This library is free software; you can redistribute it and/or
@@ -27,18 +27,18 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.ResourceModel;
 
 /**
- * Display profile editing page for logged in user. 
+ * Display profile editing page for logged in user.
  * Replaceable String resources: <pre>
  * data.auth.update
  * data.auth.title.update
  */
 public abstract class DataProfilePageBase extends WebPage {
-	public DataProfilePageBase(ReturnPage returnPage) {
-		add(new Label("title", new ResourceModel("data.auth.title.update", "Update Account")));
-		add(new DataStyleLink("dataStylesheet"));
-		add(new Label("text", new ResourceModel("data.auth.update", "Update Account")));
-		add(profileSocket("profileSocket", returnPage));
-	}
-	/** @return component to appear as the body of this page. */
-	protected abstract Component profileSocket(String id, ReturnPage returnPage);
+  public DataProfilePageBase(final ReturnPage returnPage) {
+    add(new Label("title", new ResourceModel("data.auth.title.update", "Update Account")));
+    add(new DataStyleLink("dataStylesheet"));
+    add(new Label("text", new ResourceModel("data.auth.update", "Update Account")));
+    add(profileSocket("profileSocket", returnPage));
+  }
+  /** @return component to appear as the body of this page. */
+  protected abstract Component profileSocket(String id, ReturnPage returnPage);
 }

@@ -1,13 +1,12 @@
 package net.databinder.components.jpa;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
 
 import net.databinder.jpa.Databinder;
 
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.IModel;
-import org.hibernate.Session;
-import org.hibernate.StaleObjectStateException;
 
 /**
  * Base class for forms that commit in onSubmit(). This is extended by DataForm,
@@ -38,10 +37,6 @@ public class DataFormBase<T> extends Form<T> {
     return this;
   }
 
-  protected Session getHibernateSession() {
-    return net.databinder.jpa.Databinder.getHibernateSession(factoryKey);
-  }
-
   protected EntityManager getEntityManager() {
     return net.databinder.jpa.Databinder.getEntityManager(factoryKey);
   }
@@ -66,7 +61,7 @@ public class DataFormBase<T> extends Form<T> {
         em.getTransaction().begin();
         return true;
       }
-    } catch (final StaleObjectStateException e) {
+    } catch (final PersistenceException e) {
       error(getString("version.mismatch", null)); // report error
     }
     return false;

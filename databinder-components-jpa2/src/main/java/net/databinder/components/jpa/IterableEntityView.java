@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate Copyright (C) 2006
+ * Databinder: a simple bridge from Wicket to JPA Copyright (C) 2006
  * Nathan Hamblen nathan@technically.us This library is free software; you can
  * redistribute it and/or modify it under the terms of the GNU Lesser General
  * Public License as published by the Free Software Foundation; either version
@@ -24,9 +24,9 @@ import org.apache.wicket.model.IModel;
 /**
  * Similar to a PropertyListView, but works with any Iterable collection
  * composed of persisted entities. This is particularly useful for the common
- * Hibernate set mapping, whose contents would otherwise need to be placed in a
- * new List after loading. Contained items must be Hibernate entities; a
- * Hibernate exeception will be thrown otherwise.
+ * JPA set mapping, whose contents would otherwise need to be placed in a
+ * new List after loading. Contained items must be JPA entities; a
+ * JPA exeception will be thrown otherwise.
  * @author Nathan Hamblen
  */
 public abstract class IterableEntityView<T> extends RefreshingView<T> {
@@ -56,7 +56,7 @@ public abstract class IterableEntityView<T> extends RefreshingView<T> {
   }
 
   /**
-   * Wraps o in a HibernateObjectModel inside a BoundCompoundPropertyModel.
+   * Wraps o in a JPAObjectModel inside a BoundCompoundPropertyModel.
    * Override if the compound property model is not desired.
    * @param o object to be wrapped
    * @return detachable model wrapping object

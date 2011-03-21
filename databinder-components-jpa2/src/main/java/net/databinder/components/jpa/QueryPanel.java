@@ -1,26 +1,31 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate Copyright (C) 2007
- * Nathan Hamblen nathan@technically.us Copyright (C) 2007 xoocode.org project
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation; either version 2.1 of the License, or (at your option)
- * any later version. This library is distributed in the hope that it will be
- * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
- * General Public License for more details. You should have received a copy of
- * the GNU Lesser General Public License along with this library; if not, write
- * to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
- * MA 02110-1301 USA
+ * Databinder: a simple bridge from Wicket to Hibernate
+ * Copyright (C) 2007  Nathan Hamblen nathan@technically.us
+ * Copyright (C) 2007  xoocode.org project
+
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package net.databinder.components.jpa;
+package net.databinder.components.hib;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import net.databinder.jpa.Databinder;
-import net.databinder.models.jpa.JPAObjectModel;
+import net.databinder.hib.Databinder;
+import net.databinder.models.hib.HibernateObjectModel;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -58,76 +63,69 @@ import org.hibernate.type.Type;
  * according to the query.
  * <p>
  * For instance, a query like:
- * 
  * <pre>
  * select job.name as name, job.id as id from JobModel job
  * </pre>
- * 
  * will result in two columns, 'name' and 'id', in the result data table.
  * <p>
  * If you run:
- * 
  * <pre>
  * from JobModel
  * </pre>
- * 
- * the columns in the result table will be the available properties of a
+ * the columns in the result table will be the available properties of a 
  * JobModel
  */
 public class QueryPanel extends Panel {
   private static final long serialVersionUID = 1L;
-
+  
   /**
    * Bean used to store the query
    */
-  private final QueryBean query = new QueryBean();
+  private QueryBean query = new QueryBean();
   /**
    * Stores information about the query execution (executed query, time, ...)
    */
   private String executionInfo;
-
+  
   /**
    * Constructs an {@link QueryPanel}
-   * @param id the panel identifier. Must not be null.
+   * @param id 
+   *      the panel identifier. Must not be null.
    */
-  public QueryPanel(final String id) {
+  public QueryPanel(String id) {
     super(id);
 
-    final WebMarkupContainer resultsHolder =
-      new WebMarkupContainer("resultsHolder");
-    resultsHolder.add(new Label("executionInfo", new PropertyModel<Object>(
-        this, "executionInfo")));
+    final WebMarkupContainer resultsHolder = new WebMarkupContainer("resultsHolder");
+    resultsHolder.add(new Label("executionInfo", new PropertyModel(this, "executionInfo")));
     resultsHolder.add(getResultsTable());
     resultsHolder.setOutputMarkupId(true);
     add(resultsHolder);
-
-    final Form<QueryBean> form =
-      new Form<QueryBean>("form", new CompoundPropertyModel<QueryBean>(query));
+    
+    Form<QueryBean> form = new Form<QueryBean>("form", new CompoundPropertyModel<QueryBean>(query));
     form.setOutputMarkupId(true);
-    form.add(new TextArea<String>("query"));
+    form.add(new TextArea("query"));
     form.add(new AjaxButton("submit", form) {
       private static final long serialVersionUID = 1L;
 
-      @Override
-      protected void onSubmit(final AjaxRequestTarget target, final Form<?> form) {
+      protected void onSubmit(AjaxRequestTarget target, Form form)
+      {
         if (resultsHolder.get("results") != null) {
           resultsHolder.remove("results");
         }
         try {
           resultsHolder.add(getResultsTable());
-        } catch (final QueryException e) {
+        } catch (QueryException e) {
           note(e);
-        } catch (final IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
           note(e);
-        } catch (final IllegalStateException e) {
+        } catch (IllegalStateException e) {
           note(e);
         }
         target.addComponent(resultsHolder);
       }
-
-      private void note(final Exception e) {
-        resultsHolder.add(new Label("results", e.getClass().getSimpleName()
-            + ": " + e.getMessage()));
+      private void note(Exception e) {
+        resultsHolder.add(new Label("results", 
+            e.getClass().getSimpleName()+ ": " + e.getMessage()));
       }
     });
     add(form);
@@ -142,117 +140,106 @@ public class QueryPanel extends Panel {
     if (Strings.isEmpty(query.getQuery())) {
       return new Label("results", "");
     } else {
-      final IDataProvider dataProvider = new IDataProvider() {
+      IDataProvider dataProvider = new IDataProvider() {
         private static final long serialVersionUID = 1L;
 
         public void detach() {
         }
-
+      
         public int size() {
-          final Session sess =
-            net.databinder.jpa.Databinder.getHibernateSession();
-          final Query query = sess.createQuery(getQuery());
+          Session sess = Databinder.getHibernateSession();
+          Query query = sess.createQuery(getQuery());
           return query.list().size();
         }
-
+        
         public String getQuery() {
-          return query.getQuery();
+          return QueryPanel.this.query.getQuery();
         }
-
+      
         @SuppressWarnings("unchecked")
-        public IModel<?> model(final Object object) {
-          return new CompoundPropertyModel(new JPAObjectModel(object));
+        public IModel<?> model(Object object) {
+          return new CompoundPropertyModel(new HibernateObjectModel(object));
         }
-
-        public Iterator iterator(final int first, final int count) {
-          final Session sess = Databinder.getHibernateSession();
-          final long start = System.nanoTime();
+      
+        public Iterator iterator(int first, int count) {
+          Session sess =  Databinder.getHibernateSession();
+          long start = System.nanoTime();
           try {
-            final Query q = sess.createQuery(getQuery());
+            Query q = sess.createQuery(getQuery());
             q.setFirstResult(first);
             q.setMaxResults(count);
             return q.iterate();
           } finally {
-            final float nanoTime = (System.nanoTime() - start) / 1000 / 1000.0f;
-            setExecutionInfo("query executed in " + nanoTime + " ms: "
-                + getQuery());
+            float nanoTime = ((System.nanoTime()-start) / 1000) / 1000.0f;
+            setExecutionInfo("query executed in "+nanoTime+" ms: "+getQuery());
           }
         }
       };
       IColumn[] columns;
-      final Session sess = Databinder.getHibernateSession();
-      final Query q = sess.createQuery(query.getQuery());
+      Session sess =  Databinder.getHibernateSession();
+      Query q = sess.createQuery(query.getQuery());
       String[] aliases;
       Type[] returnTypes;
       try {
         aliases = q.getReturnAliases();
         returnTypes = q.getReturnTypes();
-      } catch (final NullPointerException e) { // thrown on updates
+      } catch (NullPointerException e) { // thrown on updates
         return new Label("results", "");
       }
-
+      
       if (returnTypes.length != 1) {
         columns = new IColumn[returnTypes.length];
         for (int i = 0; i < returnTypes.length; i++) {
-          final String alias =
-            aliases == null || aliases.length <= i ? returnTypes[i].getName()
-                : aliases[i];
-            final int index = i;
-            columns[i] = new AbstractColumn(new Model(alias)) {
-              private static final long serialVersionUID = 1L;
+          String alias = aliases == null || aliases.length <= i?returnTypes[i].getName():aliases[i];
+          final int index = i;
+          columns[i] = new AbstractColumn(new Model(alias)) {
+            private static final long serialVersionUID = 1L;
 
-              public void populateItem(final Item cellItem,
-                  final String componentId, final IModel rowModel) {
-                final Object[] objects = (Object[]) rowModel.getObject();
-                cellItem.add(new Label(componentId, new Model(
-                    objects[index] == null ? "" : objects[index].toString())));
-              }
-            };
+            public void populateItem(Item cellItem, String componentId, IModel rowModel) {
+              Object[] objects = (Object[]) rowModel.getObject();
+              cellItem.add(new Label(componentId, 
+                  new Model(objects[index]==null?"":objects[index].toString())));
+            }
+          };
         }
       } else {
-        final Type returnType = returnTypes[0];
+        Type returnType = returnTypes[0];
         if (returnType.isEntityType()) {
-          final Class clss = returnType.getReturnedClass();
-          final ClassMetadata metadata =
-            Databinder.getHibernateSession().getSessionFactory()
-            .getClassMetadata(clss);
-          final List<IColumn> cols = new ArrayList<IColumn>();
-          final String idProp = metadata.getIdentifierPropertyName();
+          Class clss = returnType.getReturnedClass();
+          ClassMetadata metadata = Databinder.getHibernateSessionFactory().getClassMetadata(clss);
+          List<IColumn> cols = new ArrayList<IColumn>();
+          String idProp = metadata.getIdentifierPropertyName();
           cols.add(new PropertyColumn(new Model(idProp), idProp));
-          final String[] properties = metadata.getPropertyNames();
-          for (final String prop : properties) {
-            final Type type = metadata.getPropertyType(prop);
+          String[] properties = metadata.getPropertyNames();
+          for (String prop : properties) {
+            Type type = metadata.getPropertyType(prop);
             if (type.isCollectionType()) {
               // TODO: see if we could provide a link to the collection value
             } else {
               cols.add(new PropertyColumn(new Model(prop), prop));
             }
           }
-          columns = cols.toArray(new IColumn[cols.size()]);
+          columns = (IColumn[]) cols.toArray(new IColumn[cols.size()]);
         } else {
-          final String alias =
-            aliases == null || aliases.length == 0 ? returnType.getName()
-                : aliases[0];
-            columns = new IColumn[] { new AbstractColumn(new Model(alias)) {
-              private static final long serialVersionUID = 1L;
+          String alias = aliases == null || aliases.length == 0?returnType.getName():aliases[0];
+          columns = new IColumn[] {new AbstractColumn(new Model(alias)) {
+            private static final long serialVersionUID = 1L;
 
-              public void populateItem(final Item cellItem,
-                  final String componentId, final IModel rowModel) {
-                cellItem.add(new Label(componentId, rowModel));
-              }
-            } };
+            public void populateItem(Item cellItem, String componentId, IModel rowModel) {
+              cellItem.add(new Label(componentId, rowModel));
+            }
+          }};
         }
       }
-      final DataTable dataTable =
-        new DataTable("results", columns, dataProvider, 10);
-
+      DataTable dataTable = new DataTable("results", columns, dataProvider, 10);
+      
       dataTable.addTopToolbar(new HeadersToolbar(dataTable, null));
       dataTable.addBottomToolbar(new NavigationToolbar(dataTable));
       dataTable.setOutputMarkupId(true);
       return dataTable;
     }
   }
-
+  
   private static class QueryBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private String query;
@@ -261,7 +248,7 @@ public class QueryPanel extends Panel {
       return query;
     }
 
-    public void setQuery(final String query) {
+    public void setQuery(String query) {
       this.query = query;
     }
   }
@@ -270,7 +257,7 @@ public class QueryPanel extends Panel {
     return executionInfo;
   }
 
-  public void setExecutionInfo(final String executionInfo) {
+  public void setExecutionInfo(String executionInfo) {
     this.executionInfo = executionInfo;
   }
 

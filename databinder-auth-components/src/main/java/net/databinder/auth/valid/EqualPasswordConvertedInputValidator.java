@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
  *
  * This library is free software; you can redistribute it and/or
@@ -26,24 +26,25 @@ import org.apache.wicket.util.lang.Objects;
 
 /** Compares post-conversion input, match is valid. */
 public class EqualPasswordConvertedInputValidator extends EqualPasswordInputValidator {
-	
-	public EqualPasswordConvertedInputValidator(FormComponent comp1, FormComponent comp2) {
-		super(comp1, comp2);
-	}
-	
-	@Override
-	public void validate(Form form) {
-		FormComponent[] components = getDependentFormComponents();
-		final FormComponent formComponent1 = components[0];
-		final FormComponent formComponent2 = components[1];
 
-		if (!Objects.equal(formComponent1.getConvertedInput(), formComponent2.getConvertedInput()))
-			error(formComponent2);
-	}
-	
-	@Override
-	protected String resourceKey() {
-		return Classes.simpleName(EqualPasswordInputValidator.class);
-	}
+  public EqualPasswordConvertedInputValidator(final FormComponent comp1, final FormComponent comp2) {
+    super(comp1, comp2);
+  }
+
+  @Override
+  public void validate(final Form form) {
+    final FormComponent[] components = getDependentFormComponents();
+    final FormComponent formComponent1 = components[0];
+    final FormComponent formComponent2 = components[1];
+
+    if (!Objects.equal(formComponent1.getConvertedInput(), formComponent2.getConvertedInput())) {
+      error(formComponent2);
+    }
+  }
+
+  @Override
+  protected String resourceKey() {
+    return Classes.simpleName(EqualPasswordInputValidator.class);
+  }
 
 }

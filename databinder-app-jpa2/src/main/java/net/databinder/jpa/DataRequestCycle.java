@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate Copyright (C) 2006
+ * Databinder: a simple bridge from Wicket to JPA Copyright (C) 2006
  * Nathan Hamblen nathan@technically.us This library is free software; you can
  * redistribute it and/or modify it under the terms of the GNU Lesser General
  * Public License as published by the Free Software Foundation; either version
@@ -34,8 +34,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <p>
- * Opens Hibernate sessions and transactions as required and closes them at a
- * request's end. Uncomitted transactions are rolled back. Uses keyed Hibernate
+ * Opens JPA em and transactions as required and closes them at a
+ * request's end. Uncomitted transactions are rolled back. Uses keyed JPA
  * session factories from Databinder service.
  * </p>
  * @see Databinder
@@ -72,8 +72,8 @@ JPARequestCycle {
   }
 
   /**
-   * Called by DataStaticService when a session is needed and does not already
-   * exist. Opens a new thread-bound Hibernate session.
+   * Called by DataStaticService when a em is needed and does not already
+   * exist. Opens a new thread-bound JPA em.
    */
   public void dataEntityManagerRequested(final String key) {
     openEntityManager(key);
@@ -85,7 +85,7 @@ JPARequestCycle {
    * @return newly opened session
    */
   protected EntityManager openEntityManager(final String key) {
-    final EntityManager em = Databinder.getEntityManager();
+    final EntityManager em = Databinder.getEntityManagerFactory(key).createEntityManager();
     em.getTransaction().begin();
     ManagedEntityManagerContext.bind(em);
     keys.add(key);
@@ -93,7 +93,7 @@ JPARequestCycle {
   }
 
   /**
-   * Closes all Hibernate sessions opened for this request. If a transaction has
+   * Closes all JPA sessions opened for this request. If a transaction has
    * not been committed, it will be rolled back before closing the session.
    * @see net.databinder.components.hib.DataForm#onSubmit()
    */

@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
  *
  * This library is free software; you can redistribute it and/or
@@ -27,9 +27,9 @@ import org.apache.wicket.markup.html.WebPage;
  */
 public class PageExpiredCookieless extends WebPage {
 
-	public PageExpiredCookieless() {
-		add(new DataStyleLink("css"));
-		add(homePageLink("homePageLink"));
-	}
+  public PageExpiredCookieless() {
+    add(new DataStyleLink("css"));
+    add(homePageLink("homePageLink"));
+  }
 
 }

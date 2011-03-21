@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
  *
  * This library is free software; you can redistribute it and/or
@@ -26,6 +26,7 @@ import net.databinder.components.NullPlug;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.Session;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.border.Border;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.Form;
@@ -34,7 +35,6 @@ import org.apache.wicket.markup.html.form.SimpleFormComponentLabel;
 import org.apache.wicket.markup.html.form.validation.FormComponentFeedbackBorder;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 
@@ -48,81 +48,84 @@ import org.apache.wicket.model.ResourceModel;
  * @see AuthSession
  */
 public class DataSignInPanel<T extends DataUser> extends Panel {
-	private ReturnPage returnPage;
-	public DataSignInPanel(String id, ReturnPage returnPage) {
-		super(id);
-		this.returnPage = returnPage;
-		add(newSignInForm("signInForm"));
-	}
-	
-	/** Override to instantiate a SignInForm subclass. */
-	protected SignInForm newSignInForm(String id) {
-		return new SignInForm(id);
-	}
-	
-	/** @return default value for remember me checkbox */
-	protected boolean getRememberMeDefault() {
-		return true;
-	}
+  private final ReturnPage returnPage;
+  public DataSignInPanel(final String id, final ReturnPage returnPage) {
+    super(id);
+    this.returnPage = returnPage;
+    add(newSignInForm("signInForm"));
+  }
 
-	protected class SignInForm extends Form {
-		private CheckBox rememberMe;
-		private RequiredTextField<String> username;
-		private RSAPasswordTextField password;
-		
-		protected RequiredTextField getUsername() { return username; }
-		protected RSAPasswordTextField getPassword() { return password; }
-		protected CheckBox getRememberMe() { return rememberMe; }
-		
-		protected SignInForm(String id) {
-			super(id);
-			add(highFormSocket("highFormSocket"));
-			add(feedbackBorder("username-border")
-				.add(username = new RequiredTextField<String>("username", new Model<String>())));
-			username.setLabel(new ResourceModel("data.auth.username", "Username"));
-			add(new SimpleFormComponentLabel("username-label", username));
-			add(feedbackBorder("password-border")
-					.add(password = new RSAPasswordTextField("password", new Model<String>(), this)));
-			password.setRequired(true);
-			password.setLabel(new ResourceModel("data.auth.password", "Password"));
-			add(new SimpleFormComponentLabel("password-label", password));
-			add(rememberMe = new CheckBox("rememberMe", new Model<Boolean>(getRememberMeDefault())));
-			add(new Label("rememberMe-text", getString("data.auth.remember", null, "Always sign in automatically")));
-			
-			add(lowFormSocket("lowFormSocket"));
-		}
-		@Override
-		protected void onSubmit() {
-			if (getAuthSession().signIn((String)username.getModelObject(), (String)password.getModelObject(), 
-					(Boolean)rememberMe.getModelObject()))
-			{
-				if (returnPage == null) {
-					if (!continueToOriginalDestination())
-						setResponsePage(getApplication().getHomePage());
-				} else
-					setResponsePage(returnPage.get());
-			} else
-				error(getLocalizer().getString("signInFailed", this, "Sorry, these credentials are not recognized."));
-		}
-	}
-	
-	/** @return border to be added to each form component, base returns FormComponentFeedbackBorder */
-	protected Border feedbackBorder(String id) {
-		return new FormComponentFeedbackBorder(id);
-	}
+  /** Override to instantiate a SignInForm subclass. */
+  protected SignInForm newSignInForm(final String id) {
+    return new SignInForm(id);
+  }
 
-	/** @return content to appear above form, base return FeedbackPanel */
-	protected Component highFormSocket(String id) {
-		return new FeedbackPanel(id)
-			.add(new AttributeModifier("class", true, new Model<String>("feedback")));
-	}
+  /** @return default value for remember me checkbox */
+  protected boolean getRememberMeDefault() {
+    return true;
+  }
 
-	/** @return content to appear below form, base return blank */
-	protected Component lowFormSocket(String id) {
-		return new NullPlug(id);
-	}
-	/** @return casted session */
-	protected AuthSession<T> getAuthSession() {
-		return (AuthSession<T>) Session.get();
-	}
+  protected class SignInForm extends Form {
+    private CheckBox rememberMe;
+    private RequiredTextField<String> username;
+    private RSAPasswordTextField password;
+
+    protected RequiredTextField getUsername() { return username; }
+    protected RSAPasswordTextField getPassword() { return password; }
+    protected CheckBox getRememberMe() { return rememberMe; }
+
+    protected SignInForm(final String id) {
+      super(id);
+      add(highFormSocket("highFormSocket"));
+      add(feedbackBorder("username-border")
+          .add(username = new RequiredTextField<String>("username", new Model<String>())));
+      username.setLabel(new ResourceModel("data.auth.username", "Username"));
+      add(new SimpleFormComponentLabel("username-label", username));
+      add(feedbackBorder("password-border")
+          .add(password = new RSAPasswordTextField("password", new Model<String>(), this)));
+      password.setRequired(true);
+      password.setLabel(new ResourceModel("data.auth.password", "Password"));
+      add(new SimpleFormComponentLabel("password-label", password));
+      add(rememberMe = new CheckBox("rememberMe", new Model<Boolean>(getRememberMeDefault())));
+      add(new Label("rememberMe-text", getString("data.auth.remember", null, "Always sign in automatically")));
+
+      add(lowFormSocket("lowFormSocket"));
+    }
+    @Override
+    protected void onSubmit() {
+      if (getAuthSession().signIn(username.getModelObject(), password.getModelObject(),
+          rememberMe.getModelObject()))
+      {
+        if (returnPage == null) {
+          if (!continueToOriginalDestination()) {
+            setResponsePage(getApplication().getHomePage());
+          }
+        } else {
+          setResponsePage(returnPage.get());
+        }
+      } else {
+        error(getLocalizer().getString("signInFailed", this, "Sorry, these credentials are not recognized."));
+      }
+    }
+  }
+
+  /** @return border to be added to each form component, base returns FormComponentFeedbackBorder */
+  protected Border feedbackBorder(final String id) {
+    return new FormComponentFeedbackBorder(id);
+  }
+
+  /** @return content to appear above form, base return FeedbackPanel */
+  protected Component highFormSocket(final String id) {
+    return new FeedbackPanel(id)
+    .add(new AttributeModifier("class", true, new Model<String>("feedback")));
+  }
+
+  /** @return content to appear below form, base return blank */
+  protected Component lowFormSocket(final String id) {
+    return new NullPlug(id);
+  }
+  /** @return casted session */
+  protected AuthSession<T> getAuthSession() {
+    return (AuthSession<T>) Session.get();
+  }
 }

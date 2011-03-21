@@ -72,7 +72,7 @@ public class DataPanel<T> extends Panel {
     try {
       return (JPAObjectModel<T>) ((IChainingModel<T>)getDefaultModel()).getChainedModel();
     } catch (final ClassCastException c) {
-      throw new RuntimeException("DataPanel's nested model was not a HibernateObjectModel", c);
+      throw new RuntimeException("DataPanel's nested model was not a JPAObjectModel", c);
     }
   }
 

@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
  *
  * This library is free software; you can redistribute it and/or
@@ -24,12 +24,12 @@ package net.databinder.auth.data;
  * @author Nathan Hamblen
  */
 public interface DataUser {
-	/** @return true if user has the corresponding role */
-	boolean hasRole(String role);
-	
-	/** @return password holder, should never be null */
-	DataPassword getPassword();
-	
-	/** @return value used to identify user; may be e-mail or other identifier. */
-	public String getUsername();
+  /** @return true if user has the corresponding role */
+  boolean hasRole(String role);
+
+  /** @return password holder, should never be null */
+  DataPassword getPassword();
+
+  /** @return value used to identify user; may be e-mail or other identifier. */
+  public String getUsername();
 }

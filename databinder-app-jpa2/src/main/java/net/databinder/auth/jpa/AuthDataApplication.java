@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
  *
  * This library is free software; you can redistribute it and/or
@@ -21,6 +21,10 @@ package net.databinder.auth.jpa;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
 
 import net.databinder.auth.AuthApplication;
@@ -44,8 +48,6 @@ import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.protocol.http.WebRequest;
 import org.apache.wicket.util.crypt.Base64UrlSafe;
-import org.hibernate.cfg.AnnotationConfiguration;
-import org.hibernate.criterion.Restrictions;
 
 /**
  * Adds basic authentication functionality to DataApplication. This class is a derivative
@@ -92,14 +94,6 @@ implements IUnauthorizedComponentInstantiationListener, IRoleCheckingStrategy, A
   public Session newSession(final Request request, final Response response) {
     return new AuthDataSession(request);
   }
-  /**
-   * Adds to the configuration whatever DataUser class is defined.
-   */
-  @Override
-  protected void configureHibernate(final AnnotationConfiguration config) {
-    super.configureHibernate(config);
-    config.addAnnotatedClass(getUserClass());
-  }
 
   /**
    * Sends to sign in page if not signed in, otherwise throws UnauthorizedInstantiationException.
@@ -134,8 +128,13 @@ implements IUnauthorizedComponentInstantiationListener, IRoleCheckingStrategy, A
    * @return DataUser for the given username.
    */
   public DataUser getUser(final String username) {
-    return (DataUser) Databinder.getHibernateSession().createCriteria(getUserClass())
-    .add(Restrictions.eq("username", username)).uniqueResult();
+    final EntityManager em = Databinder.getEntityManager();
+
+    final CriteriaBuilder qb = em.getCriteriaBuilder();
+    final CriteriaQuery<DataUser> cq = qb.createQuery(DataUser.class);
+    final Root<DataUser> root = cq.from(DataUser.class);
+    cq.select(root).where(qb.equal(root.get("username"), username));
+    return em.createQuery(cq).getSingleResult();
   }
 
   /**

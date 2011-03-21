@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
  *
  * This library is free software; you can redistribute it and/or
@@ -25,7 +25,6 @@ import net.databinder.auth.data.DataUser;
 
 import org.apache.wicket.Page;
 import org.apache.wicket.authorization.strategies.role.Roles;
-import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
@@ -43,89 +42,91 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
  * data.auth.status.sign_in</pre>
  */
 public abstract class DataUserStatusPanelBase<T extends DataUser> extends Panel {
-	/**
-	 * Constructs sign in and out links.
-	 * @param id Wicket id
-	 */
-	public DataUserStatusPanelBase(String id) {
-		super(id);
+  /**
+   * Constructs sign in and out links.
+   * @param id Wicket id
+   */
+  public DataUserStatusPanelBase(final String id) {
+    super(id);
 
-		WebMarkupContainer wrapper = new WebMarkupContainer("signedInWrapper") {
-			public boolean isVisible() {
-				return getAuthSession().isSignedIn();
-			}
-		};
-		add(wrapper);
-		wrapper.add(new Label("username", new AbstractReadOnlyModel() {
-			@Override
-			public Object getObject() {
-				return getAuthSession().getUser().getUsername();
-			}
-		}));
-		wrapper.add(new Link("profile") {
-			@Override
-			public void onClick() {
-				setResponsePage(profilePage(new DataSignInPageBase.ReturnPage() {
-					public Page get() {
-						return DataUserStatusPanelBase.this.getPage();
-					}
-				}));
-			}
-		}.add(new Label("text", getString("data.auth.status.account", null, "Account"))));
+    final WebMarkupContainer wrapper = new WebMarkupContainer("signedInWrapper") {
+      @Override
+      public boolean isVisible() {
+        return getAuthSession().isSignedIn();
+      }
+    };
+    add(wrapper);
+    wrapper.add(new Label("username", new AbstractReadOnlyModel() {
+      @Override
+      public Object getObject() {
+        return getAuthSession().getUser().getUsername();
+      }
+    }));
+    wrapper.add(new Link("profile") {
+      @Override
+      public void onClick() {
+        setResponsePage(profilePage(new DataSignInPageBase.ReturnPage() {
+          @Override
+          public Page get() {
+            return DataUserStatusPanelBase.this.getPage();
+          }
+        }));
+      }
+    }.add(new Label("text", getString("data.auth.status.account", null, "Account"))));
 
-		wrapper.add(new BookmarkablePageLink("admin", adminPageClass()) {
-			@Override
-			public boolean isEnabled() {
-				return !adminPageClass().isInstance(getPage());
-			}
-			@Override
-			public boolean isVisible() {
-				T user = ((AuthSession<T>) getSession()).getUser();
-				return user != null && user.hasRole(Roles.ADMIN);
-			}
-		}.add(new Label("text", getString("data.auth.status.admin", null, "Admin"))));
+    wrapper.add(new BookmarkablePageLink("admin", adminPageClass()) {
+      @Override
+      public boolean isEnabled() {
+        return !adminPageClass().isInstance(getPage());
+      }
+      @Override
+      public boolean isVisible() {
+        final T user = ((AuthSession<T>) getSession()).getUser();
+        return user != null && user.hasRole(Roles.ADMIN);
+      }
+    }.add(new Label("text", getString("data.auth.status.admin", null, "Admin"))));
 
-		wrapper.add(new Link("signOut") {
-			@Override
-			public void onClick() {
-				getAuthSession().signOut();
-				setResponsePage(getApplication().getHomePage());
-			}
-		}.add(new Label("text", getString("data.auth.status.sign_out", null, "Sign out"))));
+    wrapper.add(new Link("signOut") {
+      @Override
+      public void onClick() {
+        getAuthSession().signOut();
+        setResponsePage(getApplication().getHomePage());
+      }
+    }.add(new Label("text", getString("data.auth.status.sign_out", null, "Sign out"))));
 
-		add(getSignInLink("signIn").add(new Label("text", getString("data.auth.status.sign_in", null, "Sign in"))));
-	}
-	
-	/** 
-	 * @param returnPage current page, to be returned to after profile update
-	 * @return new page instance for user profile 
-	 */
-	protected abstract WebPage profilePage(ReturnPage returnPage);
-	
-	/** @return page class for user administration */
-	protected abstract Class<? extends WebPage> adminPageClass();
+    add(getSignInLink("signIn").add(new Label("text", getString("data.auth.status.sign_in", null, "Sign in"))));
+  }
 
-	/**
-	 * Returns link to sign-in page from <tt>AuthDataApplication</tt> subclass. Uses redirect
-	 * to intercept page so that user will return to current page once signed in. Override
-	 * for other behavior.
-	 */
-	protected Link getSignInLink(String id) {
-		return new Link(id) {
-			@Override
-			public void onClick() {
-				redirectToInterceptPage(getSession().getPageFactory().newPage(
-						((AuthApplication<T>)getApplication()).getSignInPageClass()));
-			}
-			@Override
-			public boolean isVisible() {
-				return !getAuthSession().isSignedIn();
-			}
-		};
-	}
+  /**
+   * @param returnPage current page, to be returned to after profile update
+   * @return new page instance for user profile
+   */
+  protected abstract WebPage profilePage(ReturnPage returnPage);
 
-	/** @return casted web session*/
-	protected AuthSession getAuthSession() {
-		return (AuthSession) getSession();
-	}
+  /** @return page class for user administration */
+  protected abstract Class<? extends WebPage> adminPageClass();
+
+  /**
+   * Returns link to sign-in page from <tt>AuthDataApplication</tt> subclass. Uses redirect
+   * to intercept page so that user will return to current page once signed in. Override
+   * for other behavior.
+   */
+  protected Link getSignInLink(final String id) {
+    return new Link(id) {
+      @Override
+      public void onClick() {
+        redirectToInterceptPage(getSession().getPageFactory().newPage(
+            ((AuthApplication<T>)getApplication()).getSignInPageClass()));
+      }
+      @Override
+      public boolean isVisible() {
+        return !getAuthSession().isSignedIn();
+      }
+    };
+  }
+
+  /** @return casted web session*/
+  protected AuthSession getAuthSession() {
+    return (AuthSession) getSession();
+  }
 }

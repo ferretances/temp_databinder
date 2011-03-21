@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2008  Nathan Hamblen nathan@technically.us
  *
  * This library is free software; you can redistribute it and/or
@@ -33,35 +33,36 @@ import org.slf4j.LoggerFactory;
  * @author Nathan Hamblen
  */
 public abstract class ExceptionFilteringRequestCycle extends WebRequestCycle {
-	
-	private static final Logger log = LoggerFactory.getLogger(ExceptionFilteringRequestCycle.class);
-	/** Default pattern is ".*CodingStrategy". */
-	private static Pattern warnOnlySource = Pattern.compile(".*CodingStrategy");
-	
-	public ExceptionFilteringRequestCycle(WebApplication application, WebRequest request, Response response) {
-		super(application, request, response);
-	}
-	
-	/**
-	 * Logs runtime exception as warning if it matches the warnOnlySource pattern.
-	 * Passes to super otherwise.
-	 */
-	@Override
-	protected void logRuntimeException(RuntimeException e) {
-		if (warnOnlySource != null &&
-				warnOnlySource.matcher(e.getStackTrace()[0].getClassName()).matches())
-			log.warn(e.getMessage(), e);
-		else
-			super.logRuntimeException(e);
-	}
-	
-	/**
-	 * Change the warn testing pattern used by all instances of this class. An exception
-	 * thrown by a class (found by stack trace) matching this pattern is logged as a
-	 * warning. Set this to null to disable filtering and log all exceptions in super.
-	 * @param pattern to match against fully qualified class name of exception origin
-	 */
-	public static void setWarnOnlySource(Pattern pattern) {
-		warnOnlySource = pattern;
-	}
+
+  private static final Logger log = LoggerFactory.getLogger(ExceptionFilteringRequestCycle.class);
+  /** Default pattern is ".*CodingStrategy". */
+  private static Pattern warnOnlySource = Pattern.compile(".*CodingStrategy");
+
+  public ExceptionFilteringRequestCycle(final WebApplication application, final WebRequest request, final Response response) {
+    super(application, request, response);
+  }
+
+  /**
+   * Logs runtime exception as warning if it matches the warnOnlySource pattern.
+   * Passes to super otherwise.
+   */
+  @Override
+  protected void logRuntimeException(final RuntimeException e) {
+    if (warnOnlySource != null &&
+        warnOnlySource.matcher(e.getStackTrace()[0].getClassName()).matches()) {
+      log.warn(e.getMessage(), e);
+    } else {
+      super.logRuntimeException(e);
+    }
+  }
+
+  /**
+   * Change the warn testing pattern used by all instances of this class. An exception
+   * thrown by a class (found by stack trace) matching this pattern is logged as a
+   * warning. Set this to null to disable filtering and log all exceptions in super.
+   * @param pattern to match against fully qualified class name of exception origin
+   */
+  public static void setWarnOnlySource(final Pattern pattern) {
+    warnOnlySource = pattern;
+  }
 }

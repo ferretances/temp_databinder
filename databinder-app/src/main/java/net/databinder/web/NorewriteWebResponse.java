@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
  *
  * This library is free software; you can redistribute it and/or
@@ -33,30 +33,30 @@ import org.apache.wicket.protocol.http.WebResponse;
  */
 public class NorewriteWebResponse {
 
-	public static WebResponse getNew(Application app, final HttpServletResponse servletResponse) {
-		return app.getRequestCycleSettings().getBufferResponse() ?
-				new Buffered(servletResponse) : new Unbuffered(servletResponse);
-	}
-	
-	static class Buffered extends BufferedWebResponse {
-		public Buffered(final HttpServletResponse httpServletResponse)
-		{ 
-			super(httpServletResponse); 
-		}
-		@Override
-		public CharSequence encodeURL(CharSequence url) {
-			return url;
-		}
-	}
+  public static WebResponse getNew(final Application app, final HttpServletResponse servletResponse) {
+    return app.getRequestCycleSettings().getBufferResponse() ?
+        new Buffered(servletResponse) : new Unbuffered(servletResponse);
+  }
 
-	static class Unbuffered extends WebResponse {
-		public Unbuffered(final HttpServletResponse httpServletResponse)
-		{ 
-			super(httpServletResponse); 
-		}
-		@Override
-		public CharSequence encodeURL(CharSequence url) {
-			return url;
-		}
-	}
+  static class Buffered extends BufferedWebResponse {
+    public Buffered(final HttpServletResponse httpServletResponse)
+    {
+      super(httpServletResponse);
+    }
+    @Override
+    public CharSequence encodeURL(final CharSequence url) {
+      return url;
+    }
+  }
+
+  static class Unbuffered extends WebResponse {
+    public Unbuffered(final HttpServletResponse httpServletResponse)
+    {
+      super(httpServletResponse);
+    }
+    @Override
+    public CharSequence encodeURL(final CharSequence url) {
+      return url;
+    }
+  }
 }

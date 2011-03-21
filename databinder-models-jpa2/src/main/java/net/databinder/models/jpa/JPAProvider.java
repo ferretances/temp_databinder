@@ -17,6 +17,7 @@ import java.util.Iterator;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -41,7 +42,7 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
 
   private static final long serialVersionUID = 1L;
 
-  private Class<T> objectClass;
+  private Class<T> entityClass;
   private OrderingCriteriaBuilder criteriaBuilder;
   private QueryBuilder queryBuilder, countQueryBuilder;
 
@@ -51,7 +52,7 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
    * Provides all entities of the given class.
    */
   public JPAProvider(final Class<T> objectClass) {
-    this.objectClass = objectClass;
+    this.entityClass = objectClass;
   }
 
   /**
@@ -203,7 +204,10 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
   @SuppressWarnings("unchecked")
   public Iterator<T> iterator(final int first, final int count) {
     final EntityManager em = Databinder.getEntityManager(factoryKey);
-
+    final CriteriaBuilder cb = em.getCriteriaBuilder();
+    final CriteriaQuery<T> cq = cb.createQuery(entityClass);
+    final Root<T> e = cq.from(entityClass);
+    cq.select(e);
     if (queryBuilder != null) {
       final Query q = queryBuilder.build(em);
       q.setFirstResult(first);
@@ -214,11 +218,14 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
     if (criteriaBuilder != null) {
       criteriaBuilder.buildOrdered(em.getCriteriaBuilder());
     }
+    if(queryBuilder != null) {
+      queryBuilder.build(em);
+    }
+    final TypedQuery<T> query = em.createQuery(cq);
 
-    final Query q = queryBuilder.build(em);
-    q.setFirstResult(first);
-    q.setMaxResults(count);
-    return q.getResultList().iterator();
+    query.setFirstResult(first);
+    query.setMaxResults(count);
+    return query.getResultList().iterator();
   }
 
   /**
@@ -230,7 +237,7 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
     final EntityManager em = Databinder.getEntityManager(getFactoryKey());
     final CriteriaBuilder cb = em.getCriteriaBuilder();
     final CriteriaQuery<Long> cq = cb.createQuery(Long.class);
-    cq.select(cb.count(cq.from(objectClass)));
+    cq.select(cb.count(cq.from(entityClass)));
 
     if (countQueryBuilder != null) {
       final Query q = countQueryBuilder.build(em);
@@ -239,11 +246,10 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
     }
 
     if (criteriaBuilder != null) {
-      criteriaBuilder.buildUnordered(em.getCriteriaBuilder());
+      criteriaBuilder.buildUnordered(cb);
     }
-    final Query q = countQueryBuilder.build(em);
-    final Object obj = q.getSingleResult();
-    return ((Number) obj).intValue();
+    final TypedQuery<Long> query = em.createQuery(cq);
+    return query.getSingleResult().intValue();
   }
 
   @Override

@@ -1,5 +1,7 @@
 package net.databinder.components.jpa;
 
+import javax.persistence.criteria.Predicate;
+
 import net.databinder.components.AjaxCell;
 import net.databinder.components.AjaxOnKeyPausedUpdater;
 import net.databinder.models.jpa.CriteriaBuilder;
@@ -15,10 +17,7 @@ import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Property;
-import org.hibernate.criterion.Restrictions;
 
 /**
  * Panel for a "live" search field with a clear button. Instances of this class
@@ -100,12 +99,14 @@ public abstract class SearchPanel extends Panel {
           final javax.persistence.criteria.CriteriaBuilder criteria) {
         final String search = (String) getDefaultModelObject();
         if (search != null) {
-          final Disjunction d = Restrictions.disjunction();
+
+          final Predicate d = criteria.disjunction();
           for (final String prop : searchProperty) {
-            d.add(Property.forName(prop).like(search, matchMode));
+            //TODO d.in(values)
+            // d.add(Property.forName(prop).like(search, matchMode));
           }
-          //TODO
-          //criteria.add(d);
+          // TODO
+          // criteria.add(d);
         }
       }
     };

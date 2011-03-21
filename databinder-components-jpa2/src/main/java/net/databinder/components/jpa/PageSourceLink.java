@@ -1,5 +1,9 @@
 package net.databinder.components.jpa;
 
+import javax.persistence.EntityManager;
+
+import net.databinder.jpa.Databinder;
+
 import org.apache.wicket.Page;
 import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.model.IModel;
@@ -62,9 +66,9 @@ public class PageSourceLink<T> extends BookmarkablePageLink {
     setParameters();
   }
 
-  /** Sets the id parameter to the identifier given by Hibernate */
+  /** Sets the id parameter to the identifier given by JPA */
   protected void setParameters() {
-    setParameter(idParameter, net.databinder.jpa.Databinder
-        .getHibernateSession().getIdentifier(getModelObject()).toString());
+    final EntityManager em = Databinder.getEntityManager();
+    em.getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(getModelObject());
   }
 }

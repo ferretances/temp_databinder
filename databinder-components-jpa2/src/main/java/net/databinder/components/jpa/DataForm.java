@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate Copyright (C) 2006
+ * Databinder: a simple bridge from Wicket to JPA Copyright (C) 2006
  * Nathan Hamblen nathan@technically.us This library is free software; you can
  * redistribute it and/or modify it under the terms of the GNU Lesser General
  * Public License as published by the Free Software Foundation; either version
@@ -16,6 +16,9 @@ package net.databinder.components.jpa;
 
 import java.io.Serializable;
 
+import javax.persistence.EntityManager;
+
+import net.databinder.jpa.Databinder;
 import net.databinder.models.jpa.JPAObjectModel;
 
 import org.apache.wicket.Component;
@@ -23,16 +26,15 @@ import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
-import org.hibernate.Session;
 
 /**
- * Provides default handling for a single {@link HibernateObjectModel} nested in
+ * Provides default handling for a single {@link JPAObjectModel} nested in
  * a {@link CompoundPropertyModel}. This includes saving a new model object to
  * persistent storage and committing the current transaction when a valid form
  * is submitted. For forms holding multiple independent persistent objects (when
  * there is no single parent that cascades saves to the others), subclasses may
  * override {@link #savePersistentObjectIfNew()} to save all the form's
- * {@link HibernateObjectModel}s. (Note that automatic {@link #version} tracking
+ * {@link JPAObjectModel}s. (Note that automatic {@link #version} tracking
  * is only available for the primary model.)
  * <p>
  * For very specialized forms it may be necessary to extend this class's parent,
@@ -55,7 +57,7 @@ public class DataForm<T> extends DataFormBase<T> {
    * and retained between requests until it is persisted.
    * @param id
    * @param modelClass for the persistent object
-   * @see HibernateObjectModel#setRetainUnsaved(boolean)
+   * @see JPAObjectModel#setRetainUnsaved(boolean)
    */
   public DataForm(final String id, final Class<T> modelClass) {
     super(id, new CompoundPropertyModel<T>(new JPAObjectModel<T>(modelClass)));
@@ -80,7 +82,7 @@ public class DataForm<T> extends DataFormBase<T> {
 
   /**
    * Form that is nested below a component with a compound model containing a
-   * Hibernate model.
+   * JPA model.
    * @param id
    */
   public DataForm(final String id) {
@@ -88,7 +90,7 @@ public class DataForm<T> extends DataFormBase<T> {
   }
 
   /**
-   * @param key for the Hibernate session factory to be used with this component
+   * @param key for the JPA session factory to be used with this component
    * @return this
    */
   @Override
@@ -142,7 +144,7 @@ public class DataForm<T> extends DataFormBase<T> {
   /**
    * Replaces the form's model object with a new, blank (unbound) instance. Does
    * not affect persistent storage.
-   * @see HibernateObjectModel#unbind()
+   * @see JPAObjectModel#unbind()
    * @return this form, for chaining
    */
   public DataForm clearPersistentObject() {
@@ -197,8 +199,8 @@ public class DataForm<T> extends DataFormBase<T> {
   /**
    * Saves persistent model object if it is not already contained in the
    * session. If the a sub-class is responsible for more than one
-   * {@link HibernateObjectModel}, it may override to call
-   * {@link #saveIfNew(HibernateObjectModel)} on each.
+   * {@link JPAObjectModel}, it may override to call
+   * {@link #saveIfNew(JPAObjectModel)} on each.
    * @return true if object was newly saved
    */
   protected boolean savePersistentObjectIfNew() {
@@ -210,10 +212,10 @@ public class DataForm<T> extends DataFormBase<T> {
    * @return true if object was newly saved
    */
   protected boolean saveIfNew(final JPAObjectModel<T> model) {
-    final Session session = getHibernateSession();
-    if (!session.contains(model.getObject())) {
+    final EntityManager em = Databinder.getEntityManager();
+    if (!em.contains(model.getObject())) {
       onBeforeSave(model);
-      session.save(model.getObject());
+      em.persist(model.getObject());
       // updating binding status; though it will happen on detach
       // some UI components may like to know sooner.
       getPersistentObjectModel().checkBinding();
@@ -223,10 +225,10 @@ public class DataForm<T> extends DataFormBase<T> {
   }
 
   /**
-   * Called before saving any new object by
-   * {@link #saveIfNew(HibernateObjectModel)}. This is a good time to make last
-   * minute changes to new objects that couldn't be easily serialized (adding
-   * relationships to existing persistent entities, for example).
+   * Called before saving any new object by {@link #saveIfNew(JPAObjectModel)}.
+   * This is a good time to make last minute changes to new objects that
+   * couldn't be easily serialized (adding relationships to existing persistent
+   * entities, for example).
    * @param generally, the persistent model for this form (but subclasses may
    *          also call saveIfNew)
    */
@@ -266,18 +268,18 @@ public class DataForm<T> extends DataFormBase<T> {
 
   /**
    * Deletes the form's model object from persistent storage. Flushes change so
-   * that queries executed in the same request (e.g., in a HibernateListModel)
+   * that queries executed in the same request (e.g., in a JPAListModel)
    * will not return this object.
    * @return true if the object was deleted, false if it did not exist
    */
   protected boolean deletePersistentObject() {
-    final Session session = getHibernateSession();
+    final EntityManager em = Databinder.getEntityManager();
     final Object modelObject = getPersistentObjectModel().getObject();
-    if (!session.contains(modelObject)) {
+    if (!em.contains(modelObject)) {
       return false;
     }
-    session.delete(modelObject);
-    session.flush();
+    em.remove(modelObject);
+    em.flush();
     return true;
   }
 

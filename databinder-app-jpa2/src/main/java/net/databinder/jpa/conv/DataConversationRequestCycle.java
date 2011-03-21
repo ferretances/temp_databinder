@@ -20,6 +20,7 @@ package net.databinder.jpa.conv;
 
 import javax.persistence.EntityManager;
 import javax.persistence.FlushModeType;
+import javax.persistence.PersistenceException;
 
 import net.databinder.jpa.DataRequestCycle;
 import net.databinder.jpa.Databinder;
@@ -30,17 +31,14 @@ import org.apache.wicket.Page;
 import org.apache.wicket.Response;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.protocol.http.WebRequest;
-import org.hibernate.FlushMode;
-import org.hibernate.HibernateException;
-import org.hibernate.classic.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Supports extended Hibernate sessions for long conversations. This is useful
+ * Supports extended JPA sessions for long conversations. This is useful
  * for a page or a series of pages where changes are made to an entity that can
  * not be immediately committed. Using a "conversation" session,
- * HibernateObjectModels are used normally, but until the session is flushed the
+ * JPAObjectModels are used normally, but until the session is flushed the
  * changes are not made to persistent storage.
  * @author Nathan Hamblen
  */
@@ -79,7 +77,7 @@ public class DataConversationRequestCycle extends DataRequestCycle {
         openEntityManager(key);
         // set to manual if we are going to a conv. page
         if (IConversationPage.class.isAssignableFrom(pageClass)) {
-          Databinder.getHibernateSession(key).setFlushMode(FlushMode.MANUAL);
+          Databinder.getEntityManager(key).setFlushMode(FlushModeType.AUTO);
         }
       }
       return;
@@ -98,9 +96,9 @@ public class DataConversationRequestCycle extends DataRequestCycle {
           ManagedEntityManagerContext.bind(em);
           keys.add(key);
           return;
-        } catch (final HibernateException e) {
+        } catch (final PersistenceException e) {
           log.warn(
-              "Existing session exception on beginTransation, opening new", e);
+              "Existing em exception on beginTransation, opening new", e);
         }
       }
       // else start new one and set in page
@@ -114,7 +112,7 @@ public class DataConversationRequestCycle extends DataRequestCycle {
   }
 
   /**
-   * Inspects responding page to determine if current Hibernate session should
+   * Inspects responding page to determine if current JPA em should
    * be closed or left open and stored in the page.
    */
   @Override
@@ -149,8 +147,7 @@ public class DataConversationRequestCycle extends DataRequestCycle {
           em.close();
         }
       }
-      ManagedEntityManagerContext.unbind(Databinder.getHibernateSession(key)
-          .getSessionFactory());
+      ManagedEntityManagerContext.unbind(Databinder.getEntityManager(key).getEntityManagerFactory());
     }
   }
 
@@ -162,18 +159,18 @@ public class DataConversationRequestCycle extends DataRequestCycle {
   public Page onRuntimeException(final Page page, final RuntimeException e) {
     for (final String key : keys) {
       if (Databinder.hasEntityManagerBound(key)) {
-        final Session sess = Databinder.getHibernateSession(key);
+        final EntityManager sess = Databinder.getEntityManager(key);
         try {
           if (sess.getTransaction().isActive()) {
             sess.getTransaction().rollback();
           }
         } finally {
           sess.close();
-          ManagedEntityManagerContext.unbind(Databinder.getHibernateSession(key)
-              .getSessionFactory());
+          ManagedEntityManagerContext.unbind(Databinder.getEntityManager(key)
+              .getEntityManagerFactory());
         }
       }
-      openHibernateSession(key);
+      openEntityManager(key);
     }
     return null;
   }

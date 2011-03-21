@@ -20,6 +20,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 
 import net.databinder.jpa.Databinder;
 
@@ -131,11 +132,14 @@ public class JPAListModel<T> extends LoadableDetachableModel<List<T>> {
     final javax.persistence.criteria.CriteriaBuilder cb =
       em.getCriteriaBuilder();
     final CriteriaQuery<T> cq = cb.createQuery(entityClass);
-    final TypedQuery<T> q = em.createQuery(cq);
+    final Root<T> root = cq.from(entityClass);
+    cq.select(root);
+    final TypedQuery<T> query = em.createQuery(cq);
+
     if (criteriaBuilder != null) {
       criteriaBuilder.build(cb);
     }
-    return q.getResultList();
+    return query.getResultList();
   }
 
   public Class<T> getEntityClass() {
