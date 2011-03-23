@@ -6,14 +6,14 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-
-import org.hibernate.HibernateException;
+import javax.persistence.PersistenceException;
 
 public class ManagedEntityManagerContext implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private static final ThreadLocal context = new ThreadLocal();
+  private static final ThreadLocal<Map<Object, EntityManager>> context =
+    new ThreadLocal<Map<Object, EntityManager>>();
 
   private final EntityManagerFactory factory;
 
@@ -27,7 +27,7 @@ public class ManagedEntityManagerContext implements Serializable {
   public EntityManager currentEntityManager() {
     final EntityManager current = existingEntityManager(factory);
     if (current == null) {
-      throw new HibernateException(
+      throw new PersistenceException(
       "No EntityManger currently bound to execution context");
     }
     return current;
@@ -50,7 +50,7 @@ public class ManagedEntityManagerContext implements Serializable {
    * @return Any previously bound session (should be null in most cases).
    */
   public static EntityManager bind(final EntityManager em) {
-    return (EntityManager) entityManagerMap(true).put(
+    return entityManagerMap(true).put(
         em.getEntityManagerFactory(), em);
   }
 
@@ -62,9 +62,9 @@ public class ManagedEntityManagerContext implements Serializable {
    */
   public static EntityManager unbind(final EntityManagerFactory factory) {
     EntityManager existing = null;
-    final Map emMap = entityManagerMap();
+    final Map<Object, EntityManager> emMap = entityManagerMap();
     if (emMap != null) {
-      existing = (EntityManager) emMap.remove(factory);
+      existing = emMap.remove(factory);
       doCleanup();
     }
     return existing;
@@ -72,29 +72,31 @@ public class ManagedEntityManagerContext implements Serializable {
 
   private static EntityManager existingEntityManager(
       final EntityManagerFactory emf) {
-    final Map emMap = entityManagerMap();
+    final Map<Object, EntityManager> emMap = entityManagerMap();
     if (emMap == null) {
       return null;
     } else {
-      return (EntityManager) emMap.get(emf);
+      return emMap.get(emf);
     }
   }
 
-  protected static Map entityManagerMap() {
+  protected static Map<Object, EntityManager> entityManagerMap() {
     return entityManagerMap(false);
   }
 
-  private static synchronized Map entityManagerMap(final boolean createMap) {
-    Map emMap = (Map) context.get();
+  private static synchronized Map<Object, EntityManager> entityManagerMap(
+      final boolean createMap) {
+    Map<Object, EntityManager> emMap =
+      context.get();
     if (emMap == null && createMap) {
-      emMap = new HashMap();
+      emMap = new HashMap<Object, EntityManager>();
       context.set(emMap);
     }
     return emMap;
   }
 
   private static synchronized void doCleanup() {
-    final Map emMap = entityManagerMap(false);
+    final Map<Object, EntityManager> emMap = entityManagerMap(false);
     if (emMap != null) {
       if (emMap.isEmpty()) {
         context.set(null);

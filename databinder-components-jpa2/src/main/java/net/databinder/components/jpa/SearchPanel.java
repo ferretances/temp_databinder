@@ -1,6 +1,14 @@
 package net.databinder.components.jpa;
 
+import static net.databinder.util.JPAUtil.propertyStringExpressionToPath;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 import net.databinder.components.AjaxCell;
 import net.databinder.components.AjaxOnKeyPausedUpdater;
@@ -17,7 +25,6 @@ import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.hibernate.criterion.MatchMode;
 
 /**
  * Panel for a "live" search field with a clear button. Instances of this class
@@ -26,27 +33,29 @@ import org.hibernate.criterion.MatchMode;
  * "searchbutton.text" The SearchPanel model maps to the text of the search.
  * @author Nathan Hamblen
  */
-public abstract class SearchPanel extends Panel {
+public abstract class SearchPanel<T extends Serializable> extends Panel {
 
-  private TextField search;
+  private static final long serialVersionUID = 1L;
+
+  private TextField<String> search;
 
   /**
    * @param id Wicket id
    */
   public SearchPanel(final String id) {
-    super(id, new Model());
+    super(id, new Model<String>());
     add(new SearchForm("searchForm"));
   }
 
   /** Use the given model (must not be read-only ) for the search string */
-  public SearchPanel(final String id, final IModel searchModel) {
+  public SearchPanel(final String id, final IModel<String> searchModel) {
     super(id, searchModel);
     add(new SearchForm("searchForm"));
   }
 
   @Override
   /** Sets model to search component. */
-  public MarkupContainer setDefaultModel(final IModel model) {
+  public MarkupContainer setDefaultModel(final IModel<?> model) {
     return search.setDefaultModel(model);
   }
 
@@ -78,35 +87,23 @@ public abstract class SearchPanel extends Panel {
    * @param searchProperty one or more properties to be searched
    * @return builder to be used with list model or data provider
    */
-  public CriteriaBuilder getCriteriaBuilder(final String... searchProperty) {
-    return getCriteriaBuilder(MatchMode.ANYWHERE, searchProperty);
-  }
-
-  /**
-   * Adds a criterion that will match the current search string within
-   * (depending on the MatchMode) any of the given properties. If the search is
-   * empty, no criterion is added.
-   * @param matchMode used against all properties
-   * @param searchProperty one or more properties to be searched
-   * @return builder to be used with list model or data provider
-   */
-  public CriteriaBuilder getCriteriaBuilder(final MatchMode matchMode,
+  public CriteriaBuilder<T> getCriteriaBuilder(final Root<T> root,
       final String... searchProperty) {
-    return new CriteriaBuilder() {
+    return new CriteriaBuilder<T>() {
       private static final long serialVersionUID = 1L;
 
-      public void build(
-          final javax.persistence.criteria.CriteriaBuilder criteria) {
+      public void build(final javax.persistence.criteria.CriteriaBuilder cb) {
         final String search = (String) getDefaultModelObject();
         if (search != null) {
-
-          final Predicate d = criteria.disjunction();
+          final CriteriaQuery<String> cq = cb.createQuery(String.class);
+          final List<Predicate> crit = new ArrayList<Predicate>();
           for (final String prop : searchProperty) {
-            //TODO d.in(values)
-            // d.add(Property.forName(prop).like(search, matchMode));
+            final Predicate p =
+              cb.like(cb.lower(propertyStringExpressionToPath(root, prop)),
+                  getSearch());
+            crit.add(p);
           }
-          // TODO
-          // criteria.add(d);
+          cq.where(cb.and(crit.toArray(new Predicate[0])));
         }
       }
     };
@@ -128,20 +125,28 @@ public abstract class SearchPanel extends Panel {
   }
 
   /** Form with AJAX components and their AjaxCells. */
-  public class SearchForm extends Form {
+  public class SearchForm extends Form<Object> {
+    /** */
+    private static final long serialVersionUID = 1L;
+
     @SuppressWarnings("unchecked")
     public SearchForm(final String id) {
       super(id);
 
       final AjaxCell searchWrap = new AjaxCell("searchWrap");
       add(searchWrap);
-      search = new TextField("searchInput", SearchPanel.this.getDefaultModel());
+      search =
+        new TextField<String>("searchInput",
+            (IModel<String>) SearchPanel.this.getDefaultModel());
       search.setOutputMarkupId(true);
       searchWrap.add(search);
 
       final AjaxCell clearWrap = new AjaxCell("clearWrap");
       add(clearWrap);
-      final AjaxLink clearLink = new AjaxLink("clearLink") {
+      final AjaxLink<?> clearLink = new AjaxLink<Object>("clearLink") {
+        /** */
+        private static final long serialVersionUID = 1L;
+
         /** Clear field and register updates. */
         @Override
         public void onClick(final AjaxRequestTarget target) {
@@ -164,6 +169,9 @@ public abstract class SearchPanel extends Panel {
 
       // triggered when user pauses or tabs out
       search.add(new AjaxOnKeyPausedUpdater() {
+        /** */
+        private static final long serialVersionUID = 1L;
+
         @Override
         protected void onUpdate(final AjaxRequestTarget target) {
           target.addComponent(clearWrap);

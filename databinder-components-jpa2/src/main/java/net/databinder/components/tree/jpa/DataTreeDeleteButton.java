@@ -1,5 +1,6 @@
 package net.databinder.components.tree.jpa;
 
+import javax.persistence.EntityManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import net.databinder.components.tree.data.DataTreeObject;
@@ -7,8 +8,6 @@ import net.databinder.components.tree.data.DataTreeObject;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.markup.html.form.Form;
-import org.hibernate.Session;
-
 
 /**
  * Delete the selected node. Works only with {@link SingleSelectionDataTree} to
@@ -16,28 +15,27 @@ import org.hibernate.Session;
  * <p>
  * The root cannot be deleted, it must be handled elsewhere in the application.
  * This follows the Sun <a
- * href="http://java.sun.com/docs/books/tutorial/uiswing/components/tree.html">How
- * to Use Trees</a> tutorial, example DynamicTreeDemo.
+ * href="http://java.sun.com/docs/books/tutorial/uiswing/components/tree.html"
+ * >How to Use Trees</a> tutorial, example DynamicTreeDemo.
  * </p>
- * 
  * @author Thomas Kappler
- * 
- * @param <T>
- *            see {@link DataTree}
+ * @param <T> see {@link DataTree}
  */
-public class DataTreeDeleteButton<T extends DataTreeObject<T>> extends AjaxButton {
+public class DataTreeDeleteButton<T extends DataTreeObject<T>> extends
+AjaxButton {
 
   private SingleSelectionDataTree<T> tree;
   private boolean deleteOnlyLeafs = true;
 
-  public DataTreeDeleteButton(final String id, final SingleSelectionDataTree<T> tree) {
+  public DataTreeDeleteButton(final String id,
+      final SingleSelectionDataTree<T> tree) {
     super(id);
     this.tree = tree;
     setDefaultFormProcessing(false);
   }
 
-  public DataTreeDeleteButton(final String id, final SingleSelectionDataTree<T> tree,
-      final boolean deleteOnlyLeafs) {
+  public DataTreeDeleteButton(final String id,
+      final SingleSelectionDataTree<T> tree, final boolean deleteOnlyLeafs) {
     this(id, tree);
     this.deleteOnlyLeafs = deleteOnlyLeafs;
   }
@@ -63,8 +61,8 @@ public class DataTreeDeleteButton<T extends DataTreeObject<T>> extends AjaxButto
     final DefaultMutableTreeNode selectedNode = tree.getSelectedTreeNode();
     final T selected = tree.getSelectedUserObject();
 
-    final DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode)
-    selectedNode.getParent();
+    final DefaultMutableTreeNode parentNode =
+      (DefaultMutableTreeNode) selectedNode.getParent();
     final T parent = tree.getDataTreeNode(parentNode);
 
     if (parent != null) {
@@ -72,10 +70,10 @@ public class DataTreeDeleteButton<T extends DataTreeObject<T>> extends AjaxButto
     }
     parentNode.remove(selectedNode);
 
-    final Session session = net.databinder.jpa.Databinder.getHibernateSession();
-    if (session.contains(selected)) {
-      session.delete(selected);
-      session.getTransaction().commit();
+    final EntityManager em = net.databinder.jpa.Databinder.getEntityManager();
+    if (em.contains(selected)) {
+      em.remove(selected);
+      em.getTransaction().commit();
     }
 
     tree.getTreeState().selectNode(parentNode, true);

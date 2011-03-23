@@ -21,10 +21,21 @@ package net.databinder.models.jpa;
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  ---*/
 
+import static net.databinder.util.JPAUtil.propertyBooleanExpressionToPath;
+import static net.databinder.util.JPAUtil.propertyNumberExpressionToPath;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+
+import net.databinder.util.JPAUtil;
 
 import org.apache.wicket.Application;
 import org.apache.wicket.Session;
@@ -32,10 +43,6 @@ import org.apache.wicket.extensions.markup.html.repeater.data.table.filter.IFilt
 import org.apache.wicket.util.convert.ConversionException;
 import org.apache.wicket.util.lang.PropertyResolver;
 import org.apache.wicket.util.lang.PropertyResolverConverter;
-import org.hibernate.criterion.Conjunction;
-import org.hibernate.criterion.Disjunction;
-import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Restrictions;
 
 /**
  * An OrderingCriteriaBuilder implementation that can be wired to a
@@ -54,7 +61,7 @@ import org.hibernate.criterion.Restrictions;
  *           builder));
  * @author Mark Southern
  */
-public class CriteriaFilterAndSort<T> extends CriteriaBuildAndSort implements
+public class CriteriaFilterAndSort<T> extends CriteriaBuildAndSort<T> implements
 IFilterStateLocator<T> {
 
   private static final long serialVersionUID = 1L;
@@ -75,30 +82,30 @@ IFilterStateLocator<T> {
   }
 
   @Override
-  public void buildUnordered(
-      final javax.persistence.criteria.CriteriaBuilder criteria) {
-    super.buildUnordered(criteria);
+  public void buildUnordered(final javax.persistence.criteria.CriteriaBuilder cb) {
+    super.buildUnordered(cb);
 
-    final Conjunction conj = Restrictions.conjunction();
+    final CriteriaQuery<Object> cq = cb.createQuery();
+    final Root<T> root = cq.from(entityClass);
+    final List<Predicate> crit = new ArrayList<Predicate>();
 
     for (final Map.Entry<String, String> entry : filterMap.entrySet()) {
-      // System.out.println(String.format("%s\t%s", entry.getKey(),
-      // entry.getValue()));
       final String property = entry.getKey();
       String value = entry.getValue();
       if (value == null) {
         continue;
       }
 
-      final String prop = processProperty(criteria, property);
-      final Class clazz = PropertyResolver.getPropertyClass(property, bean);
+      final String prop = processProperty(cb, property);
+      final Class<?> clazz = PropertyResolver.getPropertyClass(property, bean);
 
       if (String.class.isAssignableFrom(clazz)) {
         final String[] items = value.split("\\s+");
         for (final String item : items) {
-          final Disjunction dist = Restrictions.disjunction();
-          dist.add(Restrictions.ilike(prop, item, MatchMode.ANYWHERE));
-          conj.add(dist);
+          final Predicate p =
+            cb.like(cb.lower(JPAUtil.propertyStringExpressionToPath(root, prop)),
+                item);
+          crit.add(p);
         }
       } else if (Number.class.isAssignableFrom(clazz)) {
         try {
@@ -108,26 +115,40 @@ IFilterStateLocator<T> {
             value = matcher.group(4);
             final Number num = convertToNumber(value, clazz);
             if (">".equals(qualifier)) {
-              conj.add(Restrictions.gt(prop, num));
+              final Predicate p =
+                cb.gt(propertyNumberExpressionToPath(root, prop), num);
+              crit.add(p);
             } else if ("<".equals(qualifier)) {
-              conj.add(Restrictions.lt(prop, num));
+              final Predicate p =
+                cb.lt(propertyNumberExpressionToPath(root, prop), num);
+              crit.add(p);
             } else if (">=".equals(qualifier)) {
-              conj.add(Restrictions.ge(prop, num));
+              final Predicate p =
+                cb.ge(propertyNumberExpressionToPath(root, prop), num);
+              crit.add(p);
             } else if ("<=".equals(qualifier)) {
-              conj.add(Restrictions.le(prop, num));
+              final Predicate p =
+                cb.le(propertyNumberExpressionToPath(root, prop), num);
+              crit.add(p);
             }
           } else {
-            conj.add(Restrictions.eq(prop, convertToNumber(value, clazz)));
+            final Predicate p =
+              cb.equal(propertyNumberExpressionToPath(root, prop),
+                  convertToNumber(value, clazz));
+            crit.add(p);
           }
         } catch (final ConversionException ex) {
           // ignore filter in this case
         }
       } else if (Boolean.class.isAssignableFrom(clazz)) {
-        conj.add(Restrictions.eq(prop, Boolean.parseBoolean(value)));
+        final Predicate p =
+          cb.equal(propertyBooleanExpressionToPath(root, prop),
+              Boolean.parseBoolean(value));
+        crit.add(p);
       }
     }
-    // TODO
-    // criteria.add(conj);
+    cq.where(cb.and(crit.toArray(new Predicate[0])));
+
   }
 
   protected Number convertToNumber(final String value, final Class clazz) {

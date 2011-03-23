@@ -1,20 +1,15 @@
 /*
- * Databinder: a simple bridge from Wicket to JPA
- * Copyright (C) 2007  Nathan Hamblen nathan@technically.us
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
+ * Databinder: a simple bridge from Wicket to JPA Copyright (C) 2007 Nathan
+ * Hamblen nathan@technically.us This library is free software; you can
+ * redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation; either version
+ * 2.1 of the License, or (at your option) any later version. This library is
+ * distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 package net.databinder.web;
 
@@ -37,32 +32,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Optional starter class for embedded Jetty. Client applications may pass
- * this classname to the Java runtime to serve with no other configuration. The webroot
- * defaults to src/main/webapp, and the server to a context named after the project directory
- * with HTTP on port 8080. <tt>jetty.warpath</tt>, <tt>jetty.contextpath</tt>,
- * <tt>jetty.port</tt>, and <tt>jetty.ajp.port</tt> system properties
- * may be used to override (e.g. <tt>-Djetty.port=80</tt> as a command line parameter). AJP
- * is enabled by specifying a port, and HTTP disabled by setting jetty.port to 0.
- * 
- * <p>Some customization can be accomplished by extending this class and overriding
+ * Optional starter class for embedded Jetty. Client applications may pass this
+ * classname to the Java runtime to serve with no other configuration. The
+ * webroot defaults to src/main/webapp, and the server to a context named after
+ * the project directory with HTTP on port 8080. <tt>jetty.warpath</tt>,
+ * <tt>jetty.contextpath</tt>, <tt>jetty.port</tt>, and <tt>jetty.ajp.port</tt>
+ * system properties may be used to override (e.g. <tt>-Djetty.port=80</tt> as a
+ * command line parameter). AJP is enabled by specifying a port, and HTTP
+ * disabled by setting jetty.port to 0.
+ * <p>
+ * Some customization can be accomplished by extending this class and overriding
  * the {@link DataServer#configure(Server, WebAppContext)} method. The subclass
- * will need a static main(args) method that constructs an instance of itself, similar
- * to {@link DataServer#main(String[])}
+ * will need a static main(args) method that constructs an instance of itself,
+ * similar to {@link DataServer#main(String[])}
  * @author Nathan Hamblen
  */
 public class DataServer {
-  private static final Logger log = LoggerFactory.getLogger(DataServer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DataServer.class);
 
   /** Constructs DataServer, kicking off server. */
-  public static void main(final String[] args)
-  {
+  public static void main(final String[] args) {
     new DataServer();
   }
 
-  /** Starts web sever using any parameters supplied. Calls
-   * {DataServer{@link #configure(Server, WebAppContext)} immediately before
-   * starting server.
+  /**
+   * Starts web sever using any parameters supplied. Calls {DataServer
+   * {@link #configure(Server, WebAppContext)} immediately before starting
+   * server.
    */
   public DataServer() {
     try {
@@ -74,7 +70,8 @@ public class DataServer {
       String projectDir = null;
       try {
         // look for project's classes directory
-        final URL[] urls = ((URLClassLoader)DataServer.class.getClassLoader()).getURLs();
+        final URL[] urls =
+          ((URLClassLoader) DataServer.class.getClassLoader()).getURLs();
         for (final URL url : urls) {
           if (url.getPath().endsWith("classes/")) {
             classes = url;
@@ -82,44 +79,48 @@ public class DataServer {
           }
         }
       } catch (final Exception e) {
-        log.info("unable to find project path by classloader", e);
+        LOG.info("unable to find project path by classloader", e);
       }
 
       if (classes == null) {
         projectDir = new File(".").getCanonicalPath();
-        log.info("project path fram current directory: " + projectDir);
+        LOG.info("project path fram current directory: " + projectDir);
       } else {
         projectDir = classes.toURI().resolve("../..").getPath();
-        log.info("project path as found by classloader: " + projectDir);
+        LOG.info("project path as found by classloader: " + projectDir);
       }
 
-      String contextPath = System.getProperty("jetty.contextpath",
-          System.getProperty("jetty.contextPath"));
+      String contextPath =
+        System.getProperty("jetty.contextpath",
+            System.getProperty("jetty.contextPath"));
       if (Strings.isEmpty(contextPath)) {
-        final Matcher m = Pattern.compile("(\\/[^\\/]+)/?$").matcher(projectDir);
+        final Matcher m =
+          Pattern.compile("(\\/[^\\/]+)/?$").matcher(projectDir);
         if (!m.find()) {
-          throw new RuntimeException("Project path not as expected: " + projectDir);
+          throw new RuntimeException("Project path not as expected: "
+              + projectDir);
         }
         contextPath = m.group(1);
-        log.info("context path by project directory: " + contextPath);
+        LOG.info("context path by project directory: " + contextPath);
       } else {
-        log.info("jetty.contextPath property: " + contextPath);
+        LOG.info("jetty.contextPath property: " + contextPath);
       }
       web.setContextPath(contextPath);
 
-      String warPath = System.getProperty("jetty.warpath",
-          System.getProperty("jetty.warPath"));
+      String warPath =
+        System.getProperty("jetty.warpath",
+            System.getProperty("jetty.warPath"));
       if (Strings.isEmpty(warPath)) {
         warPath = projectDir + "/src/main/webapp";
       }
 
       if (!new File(warPath).isDirectory()) {
-        log.error("Unable to find webapps path: " + warPath +
-            " \nPlease ensure that this project is the first on its " +
-        "classpath, or set a valid jetty.warpath JVM property.");
+        LOG.error("Unable to find webapps path: " + warPath
+            + " \nPlease ensure that this project is the first on its "
+            + "classpath, or set a valid jetty.warpath JVM property.");
         return;
       } else {
-        log.info("jetty.warPath property: " + warPath);
+        LOG.info("jetty.warPath property: " + warPath);
       }
       web.setWar(warPath);
 
@@ -134,8 +135,9 @@ public class DataServer {
       int httpPort = 8080;
       try {
         httpPort = Integer.valueOf(System.getProperty("jetty.port"));
-        log.info("jetty.port property: " + httpPort);
-      } catch (final NumberFormatException e) { }
+        LOG.info("jetty.port property: " + httpPort);
+      } catch (final NumberFormatException e) {
+      }
 
       if (httpPort != 0) {
         final SelectChannelConnector httpConn = new SelectChannelConnector();
@@ -146,8 +148,9 @@ public class DataServer {
       int ajpPort = 0;
       try {
         ajpPort = Integer.valueOf(System.getProperty("jetty.ajp.port"));
-        log.info("jetty.ajp.port property: " + ajpPort);
-      } catch (final NumberFormatException e) { }
+        LOG.info("jetty.ajp.port property: " + ajpPort);
+      } catch (final NumberFormatException e) {
+      }
 
       if (ajpPort != 0) {
         final Ajp13SocketConnector ajpConn = new Ajp13SocketConnector();
@@ -162,10 +165,10 @@ public class DataServer {
 
       server.start();
       if (httpPort != 0) {
-        log.info("Ready at http://localhost:" + httpPort + contextPath);
+        LOG.info("Ready at http://localhost:" + httpPort + contextPath);
       }
       if (ajpPort != 0) {
-        log.info("Ready at ajp://localhost:" + ajpPort + contextPath);
+        LOG.info("Ready at ajp://localhost:" + ajpPort + contextPath);
       }
       server.join();
 
@@ -179,11 +182,15 @@ public class DataServer {
    * Override to customize the server and context objects.
    * @see DataServer#DataServer()
    */
-  protected void configure(final Server server, final WebAppContext context) throws Exception { }
+  protected void configure(final Server server, final WebAppContext context)
+  throws Exception {
+  }
 
   /**
    * Override to perform action after server stops
    * @see DataServer#DataServer()
    */
-  protected void stopped(final Server server, final WebAppContext context) throws Exception {  }
+  protected void stopped(final Server server, final WebAppContext context)
+  throws Exception {
+  }
 }

@@ -14,11 +14,9 @@
 
 package net.databinder.components.jpa;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import net.databinder.components.DataStyleLink;
-import net.databinder.jpa.Databinder;
 
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
@@ -49,9 +47,10 @@ public class DataBrowser<T> extends WebPage {
         @SuppressWarnings("unchecked")
         @Override
         protected List<T> load() {
-          //TODO
-          return new ArrayList<T>(Databinder.getHibernateSession()
-              .getSessionFactory().getAllClassMetadata().keySet());
+          //          //TODO
+          //          return new ArrayList<T>(Databinder.getHibernateSession()
+          //              .getSessionFactory().getAllClassMetadata().keySet());
+          return null;
         }
       }) {
         private static final long serialVersionUID = 1L;

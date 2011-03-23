@@ -20,13 +20,10 @@ import javax.persistence.EntityManagerFactory;
 import org.apache.wicket.Application;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.WicketRuntimeException;
-import org.hibernate.classic.Session;
 
 /**
  * Provides access to application-bound Hibernate session factories and current
- * sessions. This class will work with a <a href=
- * "http://www.hibernate.org/hib_docs/v3/api/org/hibernate/context/ManagedSessionContext.html"
- * >ManagedSessionContext</a> and DataRequestCycle listener when present, but
+ * sessions. This class will work with a ManagedEntityManagerContext and DataRequestCycle listener when present, but
  * neither is required so long as a "current" session is available from the
  * session factory supplied by the application.
  * @see JPAApplication
@@ -75,18 +72,10 @@ public class Databinder {
     return getEntityManagerFactory(persistenceUnit).createEntityManager();
   }
 
-  public static Session getHibernateSession(final String persistenceUnit) {
-    return getEntityManager(persistenceUnit).unwrap(Session.class);
-  }
-
-  public static Session getHibernateSession() {
-    return getEntityManager().unwrap(Session.class);
-  }
-
   /**
    * @return true if a session is bound for the default factory
    */
-  public static boolean hasBoundSession() {
+  public static boolean hasBoundEntityManager() {
     return hasEntityManagerBound(null);
   }
 
