@@ -41,20 +41,27 @@ ISortableDataProvider<T> {
   private ISortState sortState;
 
   public SortableJPAProvider(final Class<T> objectClass,
-      final javax.persistence.criteria.CriteriaBuilder criteriaBuilder,
-      final javax.persistence.criteria.CriteriaBuilder orderingCriteriaBuilder) {
-    super(objectClass, criteriaBuilder, orderingCriteriaBuilder);
-    if (orderingCriteriaBuilder instanceof ISortStateLocator) {
-      sortStateLocator = (ISortStateLocator) orderingCriteriaBuilder;
+      final PredicateBuilder<T> predicateBuilder,
+      final PredicateBuilder<T> predicateSortBuilder,
+      final String sortableProperty) {
+    super(objectClass, predicateBuilder, predicateSortBuilder,
+        sortableProperty);
+    if (predicateSortBuilder instanceof ISortStateLocator) {
+      sortStateLocator = (ISortStateLocator) predicateSortBuilder;
     }
   }
 
   public SortableJPAProvider(final Class<T> objectClass,
-      final OrderingCriteriaBuilder criteriaBuilder) {
+      final OrderingPredicateBuilder criteriaBuilder) {
     super(objectClass, criteriaBuilder);
     if (criteriaBuilder instanceof ISortStateLocator) {
       sortStateLocator = (ISortStateLocator) criteriaBuilder;
     }
+  }
+
+  public SortableJPAProvider(final Class objectClass,
+      final PredicateBuildAndSort criteriaBuilder, final String orderProperty) {
+    super(objectClass, criteriaBuilder, orderProperty);
   }
 
   @Override

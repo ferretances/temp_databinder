@@ -13,13 +13,16 @@
  */
 package net.databinder.models.jpa;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import net.databinder.jpa.Databinder;
@@ -40,53 +43,74 @@ import org.apache.wicket.model.IModel;
  */
 public class JPAProvider<T> extends PropertyDataProvider<T> {
 
+  /** */
   private static final long serialVersionUID = 1L;
-
   private Class<T> entityClass;
-  private OrderingCriteriaBuilder criteriaBuilder;
+  private OrderingPredicateBuilder criteriaBuilder;
   private QueryBuilder queryBuilder, countQueryBuilder;
 
   private String factoryKey;
+
+  final CriteriaBuilder cb;
+  final CriteriaQuery<T> cq;
+  final Root<T> root;
 
   /**
    * Provides all entities of the given class.
    */
   public JPAProvider(final Class<T> objectClass) {
     this.entityClass = objectClass;
+    final EntityManager em = Databinder.getEntityManager();
+    cb = em.getCriteriaBuilder();
+    cq = cb.createQuery(entityClass);
+    root = cq.from(entityClass);
+  }
+
+  /** Provides entities of the given class meeting the supplied criteria. */
+  public JPAProvider(final Class<T> objectClass,
+      final PredicateBuildAndSort<T> criteriaBuilder, final String orderProperty) {
+    this(objectClass, new OrderingPredicateBuilder() {
+
+      private static final long serialVersionUID = 1L;
+
+      @Override
+      public void buildUnordered(final List<Predicate> criteria) {
+        criteriaBuilder.buildUnordered(criteria);
+      }
+
+      @Override
+      public void buildOrdered(final List<Predicate> criteria) {
+        criteriaBuilder.buildOrdered(criteria);
+      }
+    });
   }
 
   /**
    * Provides all entities of the given class using a distinct criteria builder
    * for the order query.
    * @param entityClass
-   * @param criteriaBuilder base criteria builder
-   * @param criteriaOrderer add ordering information ONLY, base criteria will be
-   *          called first
+   * @param predicateBuilder base criteria builder
+   * @param predicateOrderingBuilder add ordering information ONLY, base criteria
+   *          will be called first
    */
   public JPAProvider(final Class<T> entityClass,
-      final CriteriaBuilder criteriaBuilder,
-      final CriteriaBuilder criteriaOrderer) {
+      final PredicateBuilder<T> predicateBuilder,
+      final PredicateBuilder<T> predicateOrderingBuilder,
+      final String orderProperty) {
     this(entityClass);
-    this.criteriaBuilder = new OrderingCriteriaBuilder() {
-      /** */
+    cq.select(root);
+
+    this.criteriaBuilder = new OrderingPredicateBuilder() {
       private static final long serialVersionUID = 1L;
 
       @Override
-      public void buildOrdered(
-          final javax.persistence.criteria.CriteriaBuilder cb) {
-        final CriteriaQuery<T> criteria = cb.createQuery(entityClass);
-        final Root<T> e = criteria.from(entityClass);
-        criteria.select(e);
-        criteria.orderBy(cb.asc(e.get("id")));
+      public void buildOrdered(final List<Predicate> criteria) {
+        cq.orderBy(cb.asc(root.get(orderProperty)));
       }
 
       @Override
-      public void buildUnordered(
-          final javax.persistence.criteria.CriteriaBuilder cb) {
-        final CriteriaQuery<T> cq = cb.createQuery(entityClass);
-        final Root<T> e = cq.from(entityClass);
-        cq.select(e);
-        cq.orderBy(cb.desc(e.get("id")));
+      public void buildUnordered(final List<Predicate> criteria) {
+        cq.orderBy(cb.asc(root.get(orderProperty)));
       }
     };
   }
@@ -98,87 +122,27 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
    *          size()
    */
   public JPAProvider(final Class<T> objectClass,
-      final OrderingCriteriaBuilder criteriaBuider) {
+      final OrderingPredicateBuilder criteriaBuider) {
     this(objectClass);
     this.criteriaBuilder = criteriaBuider;
   }
 
   /** Provides entities of the given class meeting the supplied criteria. */
   public JPAProvider(final Class<T> objectClass,
-      final net.databinder.models.jpa.CriteriaBuilder criteriaBuilder) {
-    this(objectClass, new OrderingCriteriaBuilder() {
-      /** */
+      final net.databinder.models.jpa.PredicateBuilder<T> criteriaBuilder) {
+    this(objectClass, new OrderingPredicateBuilder() {
       private static final long serialVersionUID = 1L;
 
       @Override
-      public void buildOrdered(
-          final javax.persistence.criteria.CriteriaBuilder criteria) {
+      public void buildUnordered(final List<Predicate> criteria) {
         criteriaBuilder.build(criteria);
       }
 
       @Override
-      public void buildUnordered(
-          final javax.persistence.criteria.CriteriaBuilder criteria) {
+      public void buildOrdered(final List<Predicate> criteria) {
         criteriaBuilder.build(criteria);
       }
     });
-  }
-
-  /**
-   * Provides entities matching the given query. The count query is derived by
-   * prefixing "select count(*)" to the given query; this will fail if the
-   * supplied query has a select clause.
-   */
-  public JPAProvider(final String query) {
-    this(query, makeCount(query));
-  }
-
-  /**
-   * Provides entities matching the given queries.
-   */
-  public JPAProvider(final String query, final String countQuery) {
-    this(new QueryBinderBuilder(query), new QueryBinderBuilder(countQuery));
-  }
-
-  /**
-   * Provides entities matching the given query with bound parameters. The count
-   * query is derived by prefixing "select count(*)" to the given query; this
-   * will fail if the supplied query has a select clause.
-   * @deprecated because the derived count query is often non-standard, even if
-   *             it works. Use the longer constructor.
-   */
-  @Deprecated
-  public JPAProvider(final String query, final QueryBinder queryBinder) {
-    this(query, queryBinder, makeCount(query), queryBinder);
-  }
-
-  /**
-   * Provides entities matching the given queries with bound parameters.
-   * @param query query to return entities
-   * @param queryBinder binder for the standard query
-   * @param countQuery query to return count of entities
-   * @param countQueryBinder binder for the count query (may be same as
-   *          queryBinder)
-   */
-  public JPAProvider(final String query, final QueryBinder queryBinder,
-      final String countQuery, final QueryBinder countQueryBinder) {
-    this(new QueryBinderBuilder(query, queryBinder), new QueryBinderBuilder(
-        countQuery, countQueryBinder));
-  }
-
-  public JPAProvider(final QueryBuilder queryBuilder,
-      final QueryBuilder countQueryBuilder) {
-    this.queryBuilder = queryBuilder;
-    this.countQueryBuilder = countQueryBuilder;
-  }
-
-  /**
-   * @deprecated
-   * @return query with select count(*) prepended
-   */
-  @Deprecated
-  static protected String makeCount(final String query) {
-    return "select count(*) " + query;
   }
 
   /** @return session factory key, or null for the default factory */
@@ -203,11 +167,8 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
   @Override
   @SuppressWarnings("unchecked")
   public Iterator<T> iterator(final int first, final int count) {
-    final EntityManager em = Databinder.getEntityManager(factoryKey);
-    final CriteriaBuilder cb = em.getCriteriaBuilder();
-    final CriteriaQuery<T> cq = cb.createQuery(entityClass);
-    final Root<T> e = cq.from(entityClass);
-    cq.select(e);
+    cq.select(root);
+    final EntityManager em = Databinder.getEntityManager();
     if (queryBuilder != null) {
       final Query q = queryBuilder.build(em);
       q.setFirstResult(first);
@@ -216,9 +177,9 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
     }
 
     if (criteriaBuilder != null) {
-      criteriaBuilder.buildOrdered(em.getCriteriaBuilder());
+      criteriaBuilder.buildOrdered(new ArrayList<Predicate>());
     }
-    if(queryBuilder != null) {
+    if (queryBuilder != null) {
       queryBuilder.build(em);
     }
     final TypedQuery<T> query = em.createQuery(cq);
@@ -237,8 +198,9 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
     final EntityManager em = Databinder.getEntityManager(getFactoryKey());
     final CriteriaBuilder cb = em.getCriteriaBuilder();
     final CriteriaQuery<Long> cq = cb.createQuery(Long.class);
-    cq.select(cb.count(cq.from(entityClass)));
 
+    final List<Predicate> criteria = new ArrayList<Predicate>();
+    cq.select(cb.count(cq.from(entityClass)));
     if (countQueryBuilder != null) {
       final Query q = countQueryBuilder.build(em);
       final Object obj = q.getSingleResult();
@@ -246,7 +208,7 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
     }
 
     if (criteriaBuilder != null) {
-      criteriaBuilder.buildUnordered(cb);
+      criteriaBuilder.buildUnordered(criteria);
     }
     final TypedQuery<Long> query = em.createQuery(cq);
     return query.getSingleResult().intValue();

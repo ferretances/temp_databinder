@@ -17,10 +17,12 @@ package net.databinder.models.jpa;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 import javax.persistence.Version;
+import javax.persistence.criteria.Predicate;
 
 import net.databinder.jpa.Databinder;
 import net.databinder.models.BindingModel;
@@ -45,14 +47,14 @@ BindingModel<T> {
   private Class<T> objectClass;
   private Object objectId;
   private QueryBuilder queryBuilder;
-  private CriteriaBuilder<?> criteriaBuilder;
+  private PredicateBuilder<?> criteriaBuilder;
 
   /** May store unsaved objects between requests. */
   private T retainedObject;
   /** Enable retaining unsaved objects between requests. */
   private boolean retainUnsaved = true;
 
-  private String factoryKey;
+  private String factoryKey = Databinder.DEFAULT_PERSISTENCE_UNIT_NAME;
 
   /**
    * Create a model bound to the given class and entity id. If nothing matches
@@ -108,7 +110,7 @@ BindingModel<T> {
    * @param criteriaBuilder builder to apply criteria restrictions
    */
   public JPAObjectModel(final Class<T> objectClass,
-      final CriteriaBuilder criteriaBuilder) {
+      final PredicateBuilder criteriaBuilder) {
     this.objectClass = objectClass;
     this.criteriaBuilder = criteriaBuilder;
   }
@@ -163,7 +165,7 @@ BindingModel<T> {
         obj = (T) ((IChainingModel<?>) object).getObject();
       }
       objectClass = (Class<T>) obj.getClass();
-      final EntityManager em = Databinder.getEntityManager();
+      final EntityManager em = Databinder.getEntityManager(factoryKey);
       if (em.contains(obj)) {
         objectId =
           em.getEntityManagerFactory().getPersistenceUnitUtil()
@@ -224,7 +226,7 @@ BindingModel<T> {
     if (criteriaBuilder != null) {
       final javax.persistence.criteria.CriteriaBuilder cb =
         em.getCriteriaBuilder();
-      criteriaBuilder.build(cb);
+      criteriaBuilder.build(new ArrayList<Predicate>());
       return (T) em.createQuery(cb.createQuery()).getSingleResult();
     }
 

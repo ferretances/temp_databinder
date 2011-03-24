@@ -1,5 +1,6 @@
 package net.databinder.jpa;
 
+import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 /**
@@ -19,4 +20,6 @@ public interface JPAApplication {
    * @return configured {@link EntityManagerFactory} session factory
    */
   EntityManagerFactory getEntityManagerFactory(String persistenceUnitName);
+
+  EntityManager getEntityManager(String persistenceUnitName);
 }

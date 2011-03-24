@@ -23,9 +23,10 @@ import org.apache.wicket.WicketRuntimeException;
 
 /**
  * Provides access to application-bound Hibernate session factories and current
- * sessions. This class will work with a ManagedEntityManagerContext and DataRequestCycle listener when present, but
- * neither is required so long as a "current" session is available from the
- * session factory supplied by the application.
+ * sessions. This class will work with a ManagedEntityManagerContext and
+ * DataRequestCycle listener when present, but neither is required so long as a
+ * "current" session is available from the session factory supplied by the
+ * application.
  * @see JPAApplication
  * @author Nathan Hamblen
  * @author fbencosme@kitsd.com
@@ -33,12 +34,17 @@ import org.apache.wicket.WicketRuntimeException;
 public class Databinder {
 
   /**
+   * Default persistence unit name.
+   */
+  public static final String DEFAULT_PERSISTENCE_UNIT_NAME = "persistenceUnit";
+
+  /**
    * @return default session factory, as returned by the application
    * @throws WicketRuntimeException if session factory can not be found
    * @see JPAApplication
    */
   public static EntityManagerFactory getEntityManagerFactory() {
-    return getEntityManagerFactory(null);
+    return getEntityManagerFactory(DEFAULT_PERSISTENCE_UNIT_NAME);
   }
 
   /**
@@ -60,7 +66,13 @@ public class Databinder {
    * @return default Hibernate session bound to current thread
    */
   public static EntityManager getEntityManager() {
-    return getEntityManager(null);
+    final Application app = Application.get();
+    if (app instanceof JPAApplication) {
+      return ((JPAApplication) app)
+      .getEntityManager(DEFAULT_PERSISTENCE_UNIT_NAME);
+    }
+    throw new WicketRuntimeException(
+        "Please implement JPAApplication in your Application subclass.");
   }
 
   /**
@@ -76,7 +88,7 @@ public class Databinder {
    * @return true if a session is bound for the default factory
    */
   public static boolean hasBoundEntityManager() {
-    return hasEntityManagerBound(null);
+    return hasEntityManagerBound(DEFAULT_PERSISTENCE_UNIT_NAME);
   }
 
   /**
@@ -97,7 +109,8 @@ public class Databinder {
    */
   private static void dataSessionRequested(final String persistenceUnitName) {
     if (!hasEntityManagerBound(persistenceUnitName)) {
-      // if session is unavailable, it could be a late-loaded conversational
+      // if entity manager is unavailable, it could be a late-loaded
+      // conversational
       // cycle
       final RequestCycle cycle = RequestCycle.get();
       if (cycle instanceof JPARequestCycle) {

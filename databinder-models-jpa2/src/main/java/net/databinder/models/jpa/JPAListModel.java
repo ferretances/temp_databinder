@@ -14,12 +14,14 @@
 
 package net.databinder.models.jpa;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import net.databinder.jpa.Databinder;
@@ -37,9 +39,9 @@ public class JPAListModel<T> extends LoadableDetachableModel<List<T>> {
   private static final long serialVersionUID = 1L;
   private QueryBuilder queryBuilder;
   private Class<T> entityClass;
-  private CriteriaBuilder<?> criteriaBuilder;
+  private PredicateBuilder<?> criteriaBuilder;
 
-  private String factoryKey;
+  private String factoryKey = Databinder.DEFAULT_PERSISTENCE_UNIT_NAME;
 
   /**
    * Contructor for a simple query.
@@ -89,7 +91,7 @@ public class JPAListModel<T> extends LoadableDetachableModel<List<T>> {
    * @param criteriaBuilder builder to apply criteria restrictions
    */
   public JPAListModel(final Class<T> objectClass,
-      final CriteriaBuilder<?> criteriaBuilder) {
+      final PredicateBuilder<?> criteriaBuilder) {
     this.entityClass = objectClass;
     this.criteriaBuilder = criteriaBuilder;
   }
@@ -137,7 +139,7 @@ public class JPAListModel<T> extends LoadableDetachableModel<List<T>> {
     final TypedQuery<T> query = em.createQuery(cq);
 
     if (criteriaBuilder != null) {
-      criteriaBuilder.build(cb);
+      criteriaBuilder.build(new ArrayList<Predicate>());
     }
     return query.getResultList();
   }

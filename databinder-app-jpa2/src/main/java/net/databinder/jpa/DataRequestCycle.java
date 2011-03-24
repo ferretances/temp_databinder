@@ -95,7 +95,7 @@ JPARequestCycle {
   /**
    * Closes all JPA sessions opened for this request. If a transaction has
    * not been committed, it will be rolled back before closing the session.
-   * @see net.databinder.components.hib.DataForm#onSubmit()
+   * @see net.databinder.components.jpa.DataForm#onSubmit()
    */
   @Override
   protected void onEndRequest() {

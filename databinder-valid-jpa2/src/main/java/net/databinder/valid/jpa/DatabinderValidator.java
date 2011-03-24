@@ -26,7 +26,6 @@ import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.IValidatorAddListener;
 import org.apache.wicket.validation.ValidationError;
 import org.apache.wicket.validation.validator.AbstractValidator;
-import org.hibernate.Hibernate;
 
 /**
  * Checks a base model and property name against Hibernate Validator.
@@ -35,7 +34,7 @@ import org.hibernate.Hibernate;
  * @param <T> Type parameter for the validator.
  */
 public class DatabinderValidator<T> extends AbstractValidator<T> implements
-IValidatorAddListener {
+    IValidatorAddListener {
   private static final long serialVersionUID = 1L;
 
   /** Hibernate ClassValidator to use. */
@@ -105,23 +104,21 @@ IValidatorAddListener {
    * property were not supplied in the constructor, they will be determined from
    * the component this validator was added to.
    */
-  @SuppressWarnings("unchecked")
   @Override
-  protected void onValidate(final IValidatable comp) {
+  protected void onValidate(final IValidatable<T> comp) {
     if (base == null || property == null) {
-      final ModelProp mp = getModelProp(component);
+      final ModelProp<T> mp = getModelProp(component);
       base = mp.model;
       property = mp.prop;
     }
     final Object o = base.getObject();
     if (validator == null) {
-      final Class c = Hibernate.getClass(o);
       validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
 
-    for (final ConstraintViolation<Object> iv : validator.validate(o)) {
-      comp.error(new ValidationError().setMessage(iv.getMessage() + " "
-          + iv.getMessage()));
+    for (final ConstraintViolation<Object> cv : validator.validate(o)) {
+      final ValidationError vError = new ValidationError();
+      comp.error(vError.setMessage(cv.getInvalidValue() + " " + cv.getMessage()));
     }
   }
 
@@ -202,7 +199,7 @@ IValidatorAddListener {
     public UnrecognizedModelException(final Component formComponent,
         final IModel<?> model) {
       super("DatabinderValidator doesn't recognize the model " + model
-          + " of component " + formComponent.toString());
+            + " of component " + formComponent.toString());
     }
   }
 }

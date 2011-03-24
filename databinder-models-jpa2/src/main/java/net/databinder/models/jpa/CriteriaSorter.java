@@ -15,11 +15,16 @@ package net.databinder.models.jpa;
  */
 
 import java.io.Serializable;
+import java.util.List;
 
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import org.apache.commons.collections.functors.OnePredicate;
+import net.databinder.jpa.Databinder;
+
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.ISortState;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.ISortStateLocator;
 import org.apache.wicket.extensions.markup.html.repeater.util.SingleSortState;
@@ -44,25 +49,27 @@ import org.apache.wicket.extensions.markup.html.repeater.util.SortParam;
  *             problems with duplicate Aliases.
  */
 @Deprecated
-public class CriteriaSorter implements ISortStateLocator, CriteriaBuilder,
-Serializable {
+public class CriteriaSorter<T> implements ISortStateLocator,
+PredicateBuilder<T>, Serializable {
 
   private SingleSortState sortState;
 
   private String defaultProperty = null;
 
   boolean asc, cased;
+  private Class<T> entityClass;
 
-  public CriteriaSorter() {
-    this(null, true, true);
+  public CriteriaSorter(final Class<T> entityClass) {
+    this(null, true, true, entityClass);
   }
 
-  public CriteriaSorter(final String defaultProperty) {
-    this(defaultProperty, true, true);
+  public CriteriaSorter(final String defaultProperty, final Class<T> entityClass) {
+    this(defaultProperty, true, true, entityClass);
   }
 
-  public CriteriaSorter(final String defaultProperty, final boolean asc) {
-    this(defaultProperty, asc, true);
+  public CriteriaSorter(final String defaultProperty, final boolean asc,
+      final Class<T> entityClass) {
+    this(defaultProperty, asc, true, entityClass);
   }
 
   /**
@@ -71,14 +78,25 @@ Serializable {
    * @param cased - sort cased/case insensitive
    */
   public CriteriaSorter(final String defaultProperty, final boolean asc,
-      final boolean cased) {
+      final boolean cased, final Class<T> entityClass) {
     sortState = new SingleSortState();
     this.defaultProperty = defaultProperty;
     this.asc = asc;
     this.cased = cased;
   }
 
-  public void build(final javax.persistence.criteria.CriteriaBuilder criteria) {
+  @Override
+  public ISortState getSortState() {
+    return sortState;
+  }
+
+  @Override
+  public void setSortState(final ISortState state) {
+    sortState = (SingleSortState) state;
+  }
+
+  @Override
+  public void build(final List<Predicate> criteria) {
     final SortParam sort = sortState.getSort();
     String property;
     if (sort != null && sort.getProperty() != null) {
@@ -116,22 +134,17 @@ Serializable {
           property = path[path.length - 1];
         }
       }
-      final CriteriaQuery<Object> cq = criteria.createQuery();
-      final Root r = cq.from(OnePredicate.class);
-      cq.orderBy(criteria.asc(r.get(property)));
+      final EntityManager em = Databinder.getEntityManager();
+      final CriteriaBuilder cb = em.getCriteriaBuilder();
+      final CriteriaQuery<T> cq = cb.createQuery(entityClass);
+      final Root<T> root = cq.from(entityClass);
+      cq.orderBy(cb.asc(root.get(property)));
       final javax.persistence.criteria.Order order =
-        asc ? criteria.asc(r.get(property)) : criteria.desc(r.get(property));
+        asc ? cb.asc(root.get(property)) : cb.desc(root.get(property));
         // TODO order = cased ? order : order.ignoreCase();
         // criteria.addOrder(order);
         cq.orderBy(order);
     }
   }
 
-  public ISortState getSortState() {
-    return sortState;
-  }
-
-  public void setSortState(final ISortState state) {
-    sortState = (SingleSortState) state;
-  }
 }

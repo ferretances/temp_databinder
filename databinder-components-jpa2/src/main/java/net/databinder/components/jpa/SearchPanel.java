@@ -6,13 +6,16 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import net.databinder.components.AjaxCell;
 import net.databinder.components.AjaxOnKeyPausedUpdater;
-import net.databinder.models.jpa.CriteriaBuilder;
+import net.databinder.jpa.Databinder;
+import net.databinder.models.jpa.PredicateBuilder;
 import net.databinder.models.jpa.PropertyQueryBinder;
 
 import org.apache.wicket.MarkupContainer;
@@ -87,15 +90,18 @@ public abstract class SearchPanel<T extends Serializable> extends Panel {
    * @param searchProperty one or more properties to be searched
    * @return builder to be used with list model or data provider
    */
-  public CriteriaBuilder<T> getCriteriaBuilder(final Root<T> root,
+  public PredicateBuilder<T> getCriteriaBuilder(final Class<T> entityClass,
       final String... searchProperty) {
-    return new CriteriaBuilder<T>() {
+    return new PredicateBuilder<T>() {
       private static final long serialVersionUID = 1L;
 
-      public void build(final javax.persistence.criteria.CriteriaBuilder cb) {
+      public void build(final List<Predicate> predicates) {
         final String search = (String) getDefaultModelObject();
         if (search != null) {
-          final CriteriaQuery<String> cq = cb.createQuery(String.class);
+          final EntityManager em = Databinder.getEntityManager();
+          final CriteriaBuilder cb = em.getCriteriaBuilder();
+          final CriteriaQuery<T> cq = cb.createQuery(entityClass);
+          final Root<T> root = cq.from(entityClass);
           final List<Predicate> crit = new ArrayList<Predicate>();
           for (final String prop : searchProperty) {
             final Predicate p =
