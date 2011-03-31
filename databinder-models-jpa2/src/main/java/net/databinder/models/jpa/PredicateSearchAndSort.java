@@ -24,6 +24,8 @@ import java.util.List;
 
 import javax.persistence.criteria.Predicate;
 
+import net.databinder.util.JPAUtil;
+
 import org.apache.wicket.model.IModel;
 
 public class PredicateSearchAndSort<T> extends PredicateBuildAndSort<T> {
@@ -60,7 +62,7 @@ public class PredicateSearchAndSort<T> extends PredicateBuildAndSort<T> {
         for (final String prop : properties) {
           final Predicate p =
             cb.like(cb.lower(propertyStringExpressionToPath(root, prop)),
-                item);
+                JPAUtil.likePattern(item));
           criteria.add(p);
         }
       }

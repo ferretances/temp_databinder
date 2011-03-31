@@ -17,6 +17,7 @@ import net.databinder.components.AjaxOnKeyPausedUpdater;
 import net.databinder.jpa.Databinder;
 import net.databinder.models.jpa.PredicateBuilder;
 import net.databinder.models.jpa.PropertyQueryBinder;
+import net.databinder.util.JPAUtil;
 
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ResourceReference;
@@ -117,9 +118,9 @@ public abstract class SearchPanel<T extends Serializable> extends Panel {
 
   /** @return search string bracketed by the % wildcard */
   public String getSearch() {
-    return getDefaultModelObject() == null ? null : "%"
-      + getDefaultModelObject()
-      + "%";
+    final Object defaultModelObject = getDefaultModelObject();
+    return defaultModelObject == null ? null : JPAUtil
+        .likePattern(defaultModelObject.toString());
   }
 
   /**

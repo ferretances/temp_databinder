@@ -121,7 +121,6 @@ public class ValidDataForm<T> extends DataForm<T> {
     this.validator = validator;
   }
 
-  @SuppressWarnings("unchecked")
   protected void validateModelObject() {
     final T o = getPersistentObjectModel().getObject();
     Validator v =

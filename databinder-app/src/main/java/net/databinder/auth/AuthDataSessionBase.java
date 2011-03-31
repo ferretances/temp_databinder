@@ -1,20 +1,15 @@
 /*
- * Databinder: a simple bridge from Wicket to JPA
- * Copyright (C) 2008  Nathan Hamblen nathan@technically.us
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
+ * Databinder: a simple bridge from Wicket to JPA Copyright (C) 2008 Nathan
+ * Hamblen nathan@technically.us This library is free software; you can
+ * redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation; either version
+ * 2.1 of the License, or (at your option) any later version. This library is
+ * distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 package net.databinder.auth;
 
@@ -41,7 +36,12 @@ import org.apache.wicket.util.time.Duration;
  * Base class for Databinder implementations providing an implementation for
  * authentication cookies and current user lookup.
  */
-public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession implements AuthSession<T> {
+public abstract class AuthDataSessionBase<T extends DataUser> extends
+WebSession implements AuthSession<T> {
+
+  /** */
+  private static final long serialVersionUID = 1L;
+
   /** Effective signed in state. */
   private IModel<T> userModel;
   private static final String CHARACTER_ENCODING = "UTF-8";
@@ -54,6 +54,9 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
     super(request);
   }
 
+  /**
+   * @return current app
+   */
   protected AuthApplication<T> getApp() {
     return (AuthApplication<T>) Application.get();
   }
@@ -67,7 +70,7 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
    */
   @Override
   public T getUser() {
-    if  (isSignedIn()) {
+    if (isSignedIn()) {
       return getUserModel().getObject();
     }
     return null;
@@ -81,10 +84,11 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
   /**
    * @return model for current user
    */
-  public abstract IModel<T> createUserModel(T user);
+  public abstract IModel<T> createUserModel(final T user);
 
   /**
-   * @return length of time sign-in cookie should persist, defined here as one month
+   * @return length of time sign-in cookie should persist, defined here as one
+   *         month
    */
   protected Duration getSignInCookieMaxAge() {
     return Duration.days(31);
@@ -115,7 +119,8 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
    * @return true if signed in, false if credentials incorrect
    */
   @Override
-  public boolean signIn(final String username, final String password, final boolean setCookie) {
+  public boolean signIn(final String username, final String password,
+      final boolean setCookie) {
     clearUser();
     final T potential = getUser(username);
     if (potential != null && potential.getPassword().matches(password)) {
@@ -126,8 +131,9 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
   }
 
   /**
-   * Sign in a user whose credentials have been validated elsewhere. The user object must exist,
-   * and already have been saved, in the current request's JPA session.
+   * Sign in a user whose credentials have been validated elsewhere. The user
+   * object must exist, and already have been saved, in the current request's
+   * JPA session.
    * @param user validated and persisted user, must be in current JPA session
    * @param setCookie if true, sets cookie to remember user
    */
@@ -144,14 +150,17 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
    * @return true if signed in, false if credentials incorrect or unavailable
    */
   protected boolean cookieSignIn() {
-    final CookieRequestCycle requestCycle = (CookieRequestCycle) RequestCycle.get();
-    final Cookie userCookie = requestCycle.getCookie(getUserCookieName()),
-    token = requestCycle.getCookie(getAuthCookieName());
+    final CookieRequestCycle requestCycle =
+      (CookieRequestCycle) RequestCycle.get();
+    final Cookie userCookie = requestCycle.getCookie(getUserCookieName()), token =
+      requestCycle.getCookie(getAuthCookieName());
 
     if (userCookie != null && token != null) {
       T potential;
       try {
-        potential = getUser(URLDecoder.decode(userCookie.getValue(), CHARACTER_ENCODING));
+        potential =
+          getUser(URLDecoder
+              .decode(userCookie.getValue(), CHARACTER_ENCODING));
       } catch (final UnsupportedEncodingException e) {
         throw new WicketRuntimeException(e);
       }
@@ -166,8 +175,9 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
   }
 
   /**
-   * Looks for a persisted DataUser object matching the given username. Uses the user class
-   * and criteria builder returned from the application subclass implementing AuthApplication.
+   * Looks for a persisted DataUser object matching the given username. Uses the
+   * user class and criteria builder returned from the application subclass
+   * implementing AuthApplication.
    * @param username
    * @return user object from persistent storage
    * @see AuthApplication
@@ -185,13 +195,14 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
   }
 
   /**
-   * Sets cookie to remember the currently signed-in user. Sets max age to
-   * value from getSignInCookieMaxAge().
+   * Sets cookie to remember the currently signed-in user. Sets max age to value
+   * from getSignInCookieMaxAge().
    * @see AuthDataSessionBase#getSignInCookieMaxAge()
    */
   protected void setCookie() {
     if (userModel == null) {
-      throw new WicketRuntimeException("User must be signed in when calling this method");
+      throw new WicketRuntimeException(
+      "User must be signed in when calling this method");
     }
 
     final T cookieUser = getUser();
@@ -199,14 +210,15 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
 
     Cookie name, auth;
     try {
-      name = new Cookie(getUserCookieName(),
-          URLEncoder.encode(cookieUser.getUsername(), CHARACTER_ENCODING));
+      name =
+        new Cookie(getUserCookieName(), URLEncoder.encode(
+            cookieUser.getUsername(), CHARACTER_ENCODING));
       auth = new Cookie(getAuthCookieName(), getApp().getToken(cookieUser));
     } catch (final UnsupportedEncodingException e) {
       throw new WicketRuntimeException(e);
     }
 
-    final int  maxAge = (int) getSignInCookieMaxAge().seconds();
+    final int maxAge = (int) getSignInCookieMaxAge().seconds();
     name.setMaxAge(maxAge);
     auth.setMaxAge(maxAge);
 
@@ -234,7 +246,8 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
   /** Nullifies userModela nd clears authentication cookies. */
   protected void clearUser() {
     userModel = null;
-    final CookieRequestCycle requestCycle = (CookieRequestCycle) RequestCycle.get();
+    final CookieRequestCycle requestCycle =
+      (CookieRequestCycle) RequestCycle.get();
     requestCycle.clearCookie(getUserCookieName());
     requestCycle.clearCookie(getAuthCookieName());
   }

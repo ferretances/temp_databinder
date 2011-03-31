@@ -120,7 +120,7 @@ public class JPAListModel<T> extends LoadableDetachableModel<List<T>> {
   }
 
   /**
-   * Load the object List through Hibernate, binding query parameters if
+   * Load the object List through JPA, binding query parameters if
    * available.
    */
   @SuppressWarnings("unchecked")

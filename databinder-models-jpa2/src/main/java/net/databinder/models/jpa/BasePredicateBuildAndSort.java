@@ -85,21 +85,18 @@ OrderingPredicateBuilder, Serializable, ISortStateLocator {
   }
 
   @Override
-  public void buildOrdered(final List<Predicate> criteria) {
-    buildUnordered(criteria);
-
+  public void buildOrdered(final List<Predicate> predicates) {
+    buildUnordered(predicates);
     String property = defaultSortProperty;
     if (property != null) {
-      cq.where(cb.and(criteria.toArray(new Predicate[0])));
-
-      property = processProperty(criteria, property);
+      property = processProperty(predicates, property);
       cq.orderBy(sortAscending ? cb.asc(root.get(property)) : cb.desc(root
           .get(property)));
     }
   }
 
   @Override
-  public void buildUnordered(final List<Predicate> criteria) {
+  public void buildUnordered(final List<Predicate> predicates) {
     aliases.clear();
   }
 
@@ -113,7 +110,7 @@ OrderingPredicateBuilder, Serializable, ISortStateLocator {
     sortState = state;
   }
 
-  protected String processProperty(final List<Predicate> criteria,
+  protected String processProperty(final List<Predicate> predicates,
       String property) {
     if (property.contains(".")) {
       // for 'dot' properties we need to add aliases

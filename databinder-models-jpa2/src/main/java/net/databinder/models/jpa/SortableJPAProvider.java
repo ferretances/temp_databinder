@@ -17,6 +17,7 @@ package net.databinder.models.jpa;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.ISortState;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.ISortStateLocator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.ISortableDataProvider;
+import org.apache.wicket.extensions.markup.html.repeater.util.SingleSortState;
 
 /**
  * <h1>SortableHibernateProvider</h1> <i>Copyright (C) 2008 The Scripps Research
@@ -44,11 +45,11 @@ ISortableDataProvider<T> {
       final PredicateBuilder<T> predicateBuilder,
       final PredicateBuilder<T> predicateSortBuilder,
       final String sortableProperty) {
-    super(objectClass, predicateBuilder, predicateSortBuilder,
-        sortableProperty);
+    super(objectClass, predicateBuilder, predicateSortBuilder, sortableProperty);
     if (predicateSortBuilder instanceof ISortStateLocator) {
       sortStateLocator = (ISortStateLocator) predicateSortBuilder;
     }
+    initSort();
   }
 
   public SortableJPAProvider(final Class<T> objectClass,
@@ -57,11 +58,15 @@ ISortableDataProvider<T> {
     if (criteriaBuilder instanceof ISortStateLocator) {
       sortStateLocator = (ISortStateLocator) criteriaBuilder;
     }
+    initSort();
+
   }
 
-  public SortableJPAProvider(final Class objectClass,
-      final PredicateBuildAndSort criteriaBuilder, final String orderProperty) {
+  public SortableJPAProvider(final Class<T> objectClass,
+      final PredicateBuildAndSort<T> criteriaBuilder, final String orderProperty) {
     super(objectClass, criteriaBuilder, orderProperty);
+    initSort();
+
   }
 
   @Override
@@ -77,5 +82,11 @@ ISortableDataProvider<T> {
     } else {
       this.sortState = state;
     }
+  }
+
+  private void initSort() {
+    sortState = new SingleSortState();
+    ((SingleSortState) sortState).setPropertySortOrder("id",
+        ISortState.ASCENDING);
   }
 }

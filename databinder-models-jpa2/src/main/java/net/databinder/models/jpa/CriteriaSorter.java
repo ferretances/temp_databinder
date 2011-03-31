@@ -54,7 +54,7 @@ PredicateBuilder<T>, Serializable {
 
   private SingleSortState sortState;
 
-  private String defaultProperty = null;
+  private String defaultProperty = "id";
 
   boolean asc, cased;
   private Class<T> entityClass;
@@ -83,6 +83,7 @@ PredicateBuilder<T>, Serializable {
     this.defaultProperty = defaultProperty;
     this.asc = asc;
     this.cased = cased;
+    setSortState(new SingleSortState());
   }
 
   @Override

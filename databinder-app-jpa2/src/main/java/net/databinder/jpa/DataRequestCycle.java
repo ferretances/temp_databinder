@@ -1,6 +1,6 @@
 /*
- * Databinder: a simple bridge from Wicket to JPA Copyright (C) 2006
- * Nathan Hamblen nathan@technically.us This library is free software; you can
+ * Databinder: a simple bridge from Wicket to JPA Copyright (C) 2006 Nathan
+ * Hamblen nathan@technically.us This library is free software; you can
  * redistribute it and/or modify it under the terms of the GNU Lesser General
  * Public License as published by the Free Software Foundation; either version
  * 2.1 of the License, or (at your option) any later version. This library is
@@ -25,6 +25,7 @@ import javax.persistence.EntityManagerFactory;
 
 import net.databinder.CookieRequestCycle;
 
+import org.apache.wicket.Application;
 import org.apache.wicket.Page;
 import org.apache.wicket.Response;
 import org.apache.wicket.protocol.http.WebApplication;
@@ -34,9 +35,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <p>
- * Opens JPA em and transactions as required and closes them at a
- * request's end. Uncomitted transactions are rolled back. Uses keyed JPA
- * session factories from Databinder service.
+ * Opens JPA em and transactions as required and closes them at a request's end.
+ * Uncomitted transactions are rolled back. Uses keyed JPA session factories
+ * from Databinder service.
  * </p>
  * @see Databinder
  * @author Nathan Hamblen
@@ -72,8 +73,8 @@ JPARequestCycle {
   }
 
   /**
-   * Called by DataStaticService when a em is needed and does not already
-   * exist. Opens a new thread-bound JPA em.
+   * Called by DataStaticService when a em is needed and does not already exist.
+   * Opens a new thread-bound JPA em.
    */
   public void dataEntityManagerRequested(final String key) {
     openEntityManager(key);
@@ -85,16 +86,19 @@ JPARequestCycle {
    * @return newly opened session
    */
   protected EntityManager openEntityManager(final String key) {
-    final EntityManager em = Databinder.getEntityManagerFactory(key).createEntityManager();
-    em.getTransaction().begin();
+    final Application app = Application.get();
+    EntityManager em = null;
+    if (app instanceof JPAApplication) {
+      em = ((JPAApplication) app).getEntityManager(key);
+    }
     ManagedEntityManagerContext.bind(em);
     keys.add(key);
     return em;
   }
 
   /**
-   * Closes all JPA sessions opened for this request. If a transaction has
-   * not been committed, it will be rolled back before closing the session.
+   * Closes all JPA sessions opened for this request. If a transaction has not
+   * been committed, it will be rolled back before closing the session.
    * @see net.databinder.components.jpa.DataForm#onSubmit()
    */
   @Override

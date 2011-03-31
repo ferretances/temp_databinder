@@ -72,7 +72,7 @@ public class Databinder {
       .getEntityManager(DEFAULT_PERSISTENCE_UNIT_NAME);
     }
     throw new WicketRuntimeException(
-        "Please implement JPAApplication in your Application subclass.");
+    "Please implement JPAApplication in your Application subclass.");
   }
 
   /**

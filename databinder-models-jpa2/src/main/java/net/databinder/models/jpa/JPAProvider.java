@@ -167,8 +167,8 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
   @Override
   @SuppressWarnings("unchecked")
   public Iterator<T> iterator(final int first, final int count) {
-    cq.select(root);
     final EntityManager em = Databinder.getEntityManager();
+    cq.select(root);
     if (queryBuilder != null) {
       final Query q = queryBuilder.build(em);
       q.setFirstResult(first);
@@ -176,14 +176,17 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
       return q.getResultList().iterator();
     }
 
+    final List<Predicate> predicates = new ArrayList<Predicate>();
     if (criteriaBuilder != null) {
-      criteriaBuilder.buildOrdered(new ArrayList<Predicate>());
+      criteriaBuilder.buildOrdered(predicates);
     }
     if (queryBuilder != null) {
       queryBuilder.build(em);
     }
-    final TypedQuery<T> query = em.createQuery(cq);
+    cq.select(root);
+    cq.where(cb.and(predicates.toArray(new Predicate[0])));
 
+    final TypedQuery<T> query = em.createQuery(cq);
     query.setFirstResult(first);
     query.setMaxResults(count);
     return query.getResultList().iterator();
@@ -199,7 +202,7 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
     final CriteriaBuilder cb = em.getCriteriaBuilder();
     final CriteriaQuery<Long> cq = cb.createQuery(Long.class);
 
-    final List<Predicate> criteria = new ArrayList<Predicate>();
+    final List<Predicate> predicates = new ArrayList<Predicate>();
     cq.select(cb.count(cq.from(entityClass)));
     if (countQueryBuilder != null) {
       final Query q = countQueryBuilder.build(em);
@@ -208,7 +211,7 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
     }
 
     if (criteriaBuilder != null) {
-      criteriaBuilder.buildUnordered(criteria);
+      criteriaBuilder.buildUnordered(predicates);
     }
     final TypedQuery<Long> query = em.createQuery(cq);
     return query.getSingleResult().intValue();

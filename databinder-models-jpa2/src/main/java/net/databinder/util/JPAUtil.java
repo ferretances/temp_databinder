@@ -6,7 +6,6 @@ import javax.persistence.criteria.Path;
 
 public final class JPAUtil {
 
-  private static final String PORCET = "%";
 
   public static Path<String> propertyStringExpressionToPath(final Path<?> e,
       final String property) {
@@ -29,6 +28,10 @@ public final class JPAUtil {
   }
 
   public static String likePattern(final String value) {
-    return new StringBuilder(PORCET).append(value).append(PORCET).toString();
+    final StringBuilder sb = new StringBuilder();
+    sb.append("%");
+    sb.append(value);
+    sb.append("%");
+    return String.valueOf(sb);
   }
 }

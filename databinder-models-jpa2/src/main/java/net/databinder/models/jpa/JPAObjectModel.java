@@ -110,7 +110,7 @@ BindingModel<T> {
    * @param criteriaBuilder builder to apply criteria restrictions
    */
   public JPAObjectModel(final Class<T> objectClass,
-      final PredicateBuilder criteriaBuilder) {
+      final PredicateBuilder<T> criteriaBuilder) {
     this.objectClass = objectClass;
     this.criteriaBuilder = criteriaBuilder;
   }

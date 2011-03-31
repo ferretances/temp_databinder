@@ -58,8 +58,8 @@ import org.apache.wicket.util.lang.PropertyResolverConverter;
  *           builder));
  * @author Mark Southern
  */
-public class PredicateFilterAndSort<T> extends PredicateBuildAndSort<T> implements
-IFilterStateLocator<T> {
+public class PredicateFilterAndSort<T> extends PredicateBuildAndSort<T>
+implements IFilterStateLocator<T> {
 
   private static final long serialVersionUID = 1L;
 
@@ -79,9 +79,8 @@ IFilterStateLocator<T> {
   }
 
   @Override
-  public void buildUnordered(final List<Predicate> criteria) {
-    super.buildUnordered(criteria);
-
+  public void buildUnordered(final List<Predicate> predicates) {
+    super.buildUnordered(predicates);
 
     for (final Map.Entry<String, String> entry : filterMap.entrySet()) {
       final String property = entry.getKey();
@@ -90,16 +89,17 @@ IFilterStateLocator<T> {
         continue;
       }
 
-      final String prop = processProperty(criteria, property);
+      final String prop = processProperty(predicates, property);
       final Class<?> clazz = PropertyResolver.getPropertyClass(property, bean);
 
       if (String.class.isAssignableFrom(clazz)) {
         final String[] items = value.split("\\s+");
         for (final String item : items) {
           final Predicate p =
-            cb.like(cb.lower(JPAUtil.propertyStringExpressionToPath(root, prop)),
-                item);
-          criteria.add(p);
+            cb.like(
+                cb.lower(JPAUtil.propertyStringExpressionToPath(root, prop)),
+                JPAUtil.likePattern(item));
+          predicates.add(p);
         }
       } else if (Number.class.isAssignableFrom(clazz)) {
         try {
@@ -111,25 +111,25 @@ IFilterStateLocator<T> {
             if (">".equals(qualifier)) {
               final Predicate p =
                 cb.gt(propertyNumberExpressionToPath(root, prop), num);
-              criteria.add(p);
+              predicates.add(p);
             } else if ("<".equals(qualifier)) {
               final Predicate p =
                 cb.lt(propertyNumberExpressionToPath(root, prop), num);
-              criteria.add(p);
+              predicates.add(p);
             } else if (">=".equals(qualifier)) {
               final Predicate p =
                 cb.ge(propertyNumberExpressionToPath(root, prop), num);
-              criteria.add(p);
+              predicates.add(p);
             } else if ("<=".equals(qualifier)) {
               final Predicate p =
                 cb.le(propertyNumberExpressionToPath(root, prop), num);
-              criteria.add(p);
+              predicates.add(p);
             }
           } else {
             final Predicate p =
               cb.equal(propertyNumberExpressionToPath(root, prop),
                   convertToNumber(value, clazz));
-            criteria.add(p);
+            predicates.add(p);
           }
         } catch (final ConversionException ex) {
           // ignore filter in this case
@@ -138,10 +138,10 @@ IFilterStateLocator<T> {
         final Predicate p =
           cb.equal(propertyBooleanExpressionToPath(root, prop),
               Boolean.parseBoolean(value));
-        criteria.add(p);
+        predicates.add(p);
       }
     }
-    cq.where(cb.and(criteria.toArray(new Predicate[0])));
+    cq.where(cb.and(predicates.toArray(new Predicate[0])));
 
   }
 
