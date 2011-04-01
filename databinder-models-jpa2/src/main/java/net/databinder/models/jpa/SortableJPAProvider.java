@@ -20,10 +20,10 @@ import org.apache.wicket.extensions.markup.html.repeater.data.table.ISortableDat
 import org.apache.wicket.extensions.markup.html.repeater.util.SingleSortState;
 
 /**
- * <h1>SortableHibernateProvider</h1> <i>Copyright (C) 2008 The Scripps Research
+ * <h1>SortableJPAProvider</h1> <i>Copyright (C) 2008 The Scripps Research
  * Institute</i>
  * <p>
- * A HibernateProvider extension that implements ISortableDataProvider so it can
+ * A JPAProvider extension that implements ISortableDataProvider so it can
  * be used with a DefaultDataTable or an AjaxFallbackDefaultDataTable The
  * CriteriaBuilder that handles the sorting should also implement
  * ISortStateLocator (such as CriteriaSorter).

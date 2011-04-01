@@ -22,8 +22,10 @@ import static net.databinder.util.JPAUtil.propertyStringExpressionToPath;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
 
+import net.databinder.util.CriteriaDefinition;
 import net.databinder.util.JPAUtil;
 
 import org.apache.wicket.model.IModel;
@@ -39,15 +41,15 @@ public class PredicateSearchAndSort<T> extends PredicateBuildAndSort<T> {
   public PredicateSearchAndSort(final IModel<T> searchTextModel,
       final String[] searchProperties, final String defaultSortProperty,
       final boolean sortAscending, final boolean sortCased,
-      final Class<T> entityClass) {
-    super(defaultSortProperty, sortAscending, sortCased, entityClass);
+      final CriteriaDefinition<T> criteriaDefinition) {
+    super(defaultSortProperty, sortAscending, sortCased, criteriaDefinition);
     this.searchTextModel = searchTextModel;
     this.searchProperties = searchProperties;
   }
 
   @Override
-  public void buildUnordered(final List<Predicate> criteria) {
-    super.buildUnordered(criteria);
+  public void buildUnordered(final List<Predicate> predicates) {
+    super.buildUnordered(predicates);
 
     final String searchText = (String) searchTextModel.getObject();
     if (searchText != null) {
@@ -55,18 +57,23 @@ public class PredicateSearchAndSort<T> extends PredicateBuildAndSort<T> {
 
       final List<String> properties = new ArrayList<String>();
       for (final String prop : getSearchProperties()) {
-        properties.add(processProperty(criteria, prop));
+        properties.add(processProperty(predicates, prop));
       }
+
+      final CriteriaDefinition<T> cd = getCriteriaDefinition();
+      final CriteriaBuilder cb = cd.getCriteriaBuilder();
 
       for (final String item : items) {
         for (final String prop : properties) {
           final Predicate p =
-            cb.like(cb.lower(propertyStringExpressionToPath(root, prop)),
+            cb.like(cb.lower(propertyStringExpressionToPath(cd.getRoot(), prop)),
                 JPAUtil.likePattern(item));
-          criteria.add(p);
+          predicates.add(p);
         }
       }
-      cq.where(cb.and(criteria.toArray(new Predicate[0])));
+      cd.addAllPredicates(predicates);
+      cd.select();
+      cd.perform();
     }
   }
 

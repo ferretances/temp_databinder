@@ -1,0 +1,104 @@
+/*
+ * Copyright 2011 Kindleit Technologies. All rights reserved. This file, all
+ * proprietary knowledge and algorithms it details are the sole property of
+ * Kindleit Technologies unless otherwise specified. The software this file
+ * belong with is the confidential and proprietary information of Kindleit
+ * Technologies. ("Confidential Information"). You shall not disclose such
+ * Confidential Information and shall use it only in accordance with the terms
+ * of the license agreement you entered into with Kindleit.
+ */
+package net.databinder.util;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+
+/**
+ * CriteriaDefinition is responsible of building a jpa2 needs.
+ * @author fbencosme@kitsd.com
+ * @param <T> entity.
+ */
+public class CriteriaDefinition<T> implements Serializable {
+
+  private static final long serialVersionUID = 1L;
+
+  private final Root<T> root;
+
+  private final CriteriaQuery<Object> criteriaQuery;
+
+  private final CriteriaBuilder criteriaBuilder;
+
+  private final Class<T> entityClass;
+
+  private final EntityManager em;
+
+  private List<Predicate> predicates = new ArrayList<Predicate>();
+
+  public CriteriaDefinition(final Class<T> entityClass,
+      final EntityManager entityManager) {
+    this.entityClass = entityClass;
+    this.em = entityManager;
+    criteriaBuilder = entityManager.getCriteriaBuilder();
+    criteriaQuery = criteriaBuilder.createQuery();
+    root = criteriaQuery.from(entityClass);
+  }
+
+  public Root<T> getRoot() {
+    return root;
+  }
+
+  public Class<T> getEntityClass() {
+    return entityClass;
+  }
+
+  public CriteriaBuilder getCriteriaBuilder() {
+    return criteriaBuilder;
+  }
+
+  public CriteriaQuery<Object> getCriteriaQuery() {
+    return criteriaQuery;
+  }
+
+  public EntityManager getEntityManager() {
+    return em;
+  }
+
+  public CriteriaDefinition<T> setPredicates(final List<Predicate> predicates) {
+    this.predicates = predicates;
+    return this;
+  }
+
+  public List<Predicate> getPredicates() {
+    return predicates;
+  }
+
+  public void addPredicate(final Predicate predicate) {
+    predicates.add(predicate);
+  }
+
+  public void addAllPredicates(final List<Predicate> predicates) {
+    this.predicates.addAll(predicates);
+  }
+
+  public void perform() {
+    criteriaQuery.where(criteriaBuilder.and(predicates
+        .toArray(new Predicate[0])));
+  }
+
+  public void select() {
+    criteriaQuery.select(root);
+  }
+
+  @SuppressWarnings("unchecked")
+  public TypedQuery<T> getTypeQuery () {
+    return (TypedQuery<T>) em.createQuery(criteriaQuery);
+  }
+
+}

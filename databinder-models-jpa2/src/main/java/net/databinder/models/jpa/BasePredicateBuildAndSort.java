@@ -26,13 +26,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.persistence.EntityManager;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 
-import net.databinder.jpa.Databinder;
+import net.databinder.util.CriteriaDefinition;
 
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.ISortState;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.ISortStateLocator;
@@ -45,7 +41,7 @@ import org.apache.wicket.extensions.markup.html.repeater.util.SingleSortState;
  * code in one location.
  */
 public abstract class BasePredicateBuildAndSort<T> implements
-OrderingPredicateBuilder, Serializable, ISortStateLocator {
+OrderingPredicateBuilder<T>, Serializable, ISortStateLocator {
 
   private static final long serialVersionUID = 1L;
 
@@ -55,33 +51,25 @@ OrderingPredicateBuilder, Serializable, ISortStateLocator {
 
   protected boolean sortAscending, sortCased;
 
-  protected Class<T> entityClass;
-
   private ISortState sortState = new SingleSortState();
 
-  protected final Root<T> root ;
-  protected final CriteriaQuery<Object> cq;
-  protected final CriteriaBuilder cb;
+  private CriteriaDefinition<T> criteriaDefinition;
 
-  public BasePredicateBuildAndSort(final Class<T> entityClass) {
-    this(null, true, false, entityClass);
+  public BasePredicateBuildAndSort(
+      final CriteriaDefinition<T> criteriaDefinition) {
+    this(null, true, false, criteriaDefinition);
   }
 
   public BasePredicateBuildAndSort(final String defaultSortProperty,
       final boolean sortAscending, final boolean sortCased,
-      final Class<T> entityClass) {
+      final CriteriaDefinition<T> criteriaDefinition) {
     this.defaultSortProperty = defaultSortProperty;
     this.sortAscending = sortAscending;
     this.sortCased = sortCased;
-    this.entityClass = entityClass;
-
+    this.criteriaDefinition = criteriaDefinition;
     sortState.setPropertySortOrder(defaultSortProperty, ISortState.ASCENDING);
     setSortState(sortState);
 
-    final EntityManager em = Databinder.getEntityManager();
-    cb = em.getCriteriaBuilder();
-    cq = cb.createQuery();
-    root = cq.from(entityClass);
   }
 
   @Override
@@ -90,8 +78,11 @@ OrderingPredicateBuilder, Serializable, ISortStateLocator {
     String property = defaultSortProperty;
     if (property != null) {
       property = processProperty(predicates, property);
-      cq.orderBy(sortAscending ? cb.asc(root.get(property)) : cb.desc(root
-          .get(property)));
+      final CriteriaDefinition<T> cd = getCriteriaDefinition();
+      cd.getCriteriaQuery().orderBy(
+          sortAscending ? cd.getCriteriaBuilder().asc(
+              cd.getRoot().get(property)) : cd.getCriteriaBuilder().desc(
+                  cd.getRoot().get(property)));
     }
   }
 
@@ -144,5 +135,17 @@ OrderingPredicateBuilder, Serializable, ISortStateLocator {
       }
     }
     return property;
+  }
+
+  @Override
+  public BasePredicateBuildAndSort<T> setCriteriaDefinition(
+      final CriteriaDefinition<T> criteriaDefinition) {
+    this.criteriaDefinition = criteriaDefinition;
+    return this;
+  }
+
+  @Override
+  public CriteriaDefinition<T> getCriteriaDefinition() {
+    return criteriaDefinition;
   }
 }

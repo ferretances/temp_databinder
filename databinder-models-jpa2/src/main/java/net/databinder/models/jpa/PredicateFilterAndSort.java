@@ -30,8 +30,11 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
+import net.databinder.util.CriteriaDefinition;
 import net.databinder.util.JPAUtil;
 
 import org.apache.wicket.Application;
@@ -73,8 +76,8 @@ implements IFilterStateLocator<T> {
 
   public PredicateFilterAndSort(final Object bean,
       final String defaultSortProperty, final boolean sortAscending,
-      final boolean sortCased, final Class<T> entityClass) {
-    super(defaultSortProperty, sortAscending, sortCased, entityClass);
+      final boolean sortCased, final CriteriaDefinition<T> criteriaDefinition) {
+    super(defaultSortProperty, sortAscending, sortCased, criteriaDefinition);
     this.bean = bean;
   }
 
@@ -92,13 +95,18 @@ implements IFilterStateLocator<T> {
       final String prop = processProperty(predicates, property);
       final Class<?> clazz = PropertyResolver.getPropertyClass(property, bean);
 
+      final CriteriaDefinition<T> cd = getCriteriaDefinition();
+      final Root<T> root = cd.getRoot();
+      final CriteriaBuilder cb = cd.getCriteriaBuilder();
       if (String.class.isAssignableFrom(clazz)) {
         final String[] items = value.split("\\s+");
         for (final String item : items) {
           final Predicate p =
             cb.like(
-                cb.lower(JPAUtil.propertyStringExpressionToPath(root, prop)),
-                JPAUtil.likePattern(item));
+                cb
+                .lower(
+                    JPAUtil.propertyStringExpressionToPath(root,
+                        prop)), JPAUtil.likePattern(item));
           predicates.add(p);
         }
       } else if (Number.class.isAssignableFrom(clazz)) {
@@ -110,24 +118,29 @@ implements IFilterStateLocator<T> {
             final Number num = convertToNumber(value, clazz);
             if (">".equals(qualifier)) {
               final Predicate p =
-                cb.gt(propertyNumberExpressionToPath(root, prop), num);
+                cb.gt(
+                    propertyNumberExpressionToPath(root, prop), num);
               predicates.add(p);
             } else if ("<".equals(qualifier)) {
               final Predicate p =
-                cb.lt(propertyNumberExpressionToPath(root, prop), num);
+                cb.lt(
+                    propertyNumberExpressionToPath(root, prop), num);
               predicates.add(p);
             } else if (">=".equals(qualifier)) {
               final Predicate p =
-                cb.ge(propertyNumberExpressionToPath(root, prop), num);
+                cb.ge(
+                    propertyNumberExpressionToPath(root, prop), num);
               predicates.add(p);
             } else if ("<=".equals(qualifier)) {
               final Predicate p =
-                cb.le(propertyNumberExpressionToPath(root, prop), num);
+                cb.le(
+                    propertyNumberExpressionToPath(root, prop), num);
               predicates.add(p);
             }
           } else {
             final Predicate p =
-              cb.equal(propertyNumberExpressionToPath(root, prop),
+              cb.equal(
+                  propertyNumberExpressionToPath(root, prop),
                   convertToNumber(value, clazz));
             predicates.add(p);
           }
@@ -141,16 +154,16 @@ implements IFilterStateLocator<T> {
         predicates.add(p);
       }
     }
-    cq.where(cb.and(predicates.toArray(new Predicate[0])));
-
+    getCriteriaDefinition().addAllPredicates(predicates);
   }
 
-  protected Number convertToNumber(final String value, final Class clazz) {
+  protected Number convertToNumber(final String value, final Class<?> clazz) {
     return (Number) new PropertyResolverConverter(Application.get()
         .getConverterLocator(), Session.get().getLocale())
     .convert(value, clazz);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public T getFilterState() {
     return (T) filterMap;
@@ -159,7 +172,7 @@ implements IFilterStateLocator<T> {
   @Override
   @SuppressWarnings("unchecked")
   public void setFilterState(final Object filterMap) {
-    this.filterMap = (Map) filterMap;
+    this.filterMap = (Map<String, String>) filterMap;
   }
 
 }

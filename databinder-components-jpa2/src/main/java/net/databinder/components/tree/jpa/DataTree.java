@@ -6,13 +6,16 @@ import java.util.List;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 
 import net.databinder.components.tree.data.DataTreeObject;
+import net.databinder.models.jpa.BasicPredicateBuilder;
 import net.databinder.models.jpa.JPAListModel;
 import net.databinder.models.jpa.JPAObjectModel;
+import net.databinder.util.CriteriaDefinition;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.tree.BaseTree;
@@ -61,8 +64,8 @@ public abstract class DataTree<T extends DataTreeObject<T>> extends BaseTree {
   /**
    * Convenience criteria builder for fetching top-level entities.
    */
-  public static class TopLevelCriteriaBuilder<T> implements
-  net.databinder.models.jpa.PredicateBuilder<T> {
+  public static class TopLevelCriteriaBuilder<T> extends
+  BasicPredicateBuilder<T> {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -71,9 +74,19 @@ public abstract class DataTree<T extends DataTreeObject<T>> extends BaseTree {
     public void build(final CriteriaBuilder predicates) {
     }
 
+    @Override
     public void build(final List<Predicate> predicates) {
-      // TODO
-      // criteria.add(Property.forName("parent").isNull());
+      final CriteriaDefinition<T> cd = getCriteriaDefinition();
+      final Root<T> root = cd.getRoot();
+      final CriteriaBuilder cb = cd.getCriteriaBuilder();
+      final Predicate p = cb.isNotNull(root.get("parent"));
+      predicates.add(p);
+      cd.addAllPredicates(predicates);
+    }
+
+    @Override
+    protected Class<T> getEntityClass() {
+      return null;
     }
   }
 

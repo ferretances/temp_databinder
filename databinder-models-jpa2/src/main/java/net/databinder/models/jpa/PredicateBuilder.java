@@ -19,12 +19,27 @@ import java.util.List;
 
 import javax.persistence.criteria.Predicate;
 
+import net.databinder.util.CriteriaDefinition;
+
 /**
  * Interface for callback that sets parameters for a {@link Predicate} object
  * and any necessary sub-criteria.
  * @author Nathan Hamblen
  */
 public interface PredicateBuilder<T> extends Serializable {
-  /** Add properties, set projections, etc. */
-  void build(List<Predicate> criteria);
+
+  /**
+   * @param criteriaDefinition
+   * @return {@link PredicateBuilder}
+   */
+  PredicateBuilder<T> setCriteriaDefinition(
+      final CriteriaDefinition<T> criteriaDefinition);
+
+  /**
+   * @return {@link CriteriaDefinition}
+   */
+  CriteriaDefinition<T> getCriteriaDefinition();
+
+  /** Add predicates to criteria definition */
+  void build(final List<Predicate> predicates);
 }

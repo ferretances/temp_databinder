@@ -20,11 +20,13 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import net.databinder.jpa.Databinder;
+import net.databinder.util.CriteriaDefinition;
 
 import org.apache.wicket.model.LoadableDetachableModel;
 
@@ -39,7 +41,7 @@ public class JPAListModel<T> extends LoadableDetachableModel<List<T>> {
   private static final long serialVersionUID = 1L;
   private QueryBuilder queryBuilder;
   private Class<T> entityClass;
-  private PredicateBuilder<?> criteriaBuilder;
+  private PredicateBuilder<?> predicateBuilder;
 
   private String factoryKey = Databinder.DEFAULT_PERSISTENCE_UNIT_NAME;
 
@@ -63,6 +65,7 @@ public class JPAListModel<T> extends LoadableDetachableModel<List<T>> {
       @Override
       public void bind(final Query query) {
         // TODO
+        // query.setCacheable(cacheable);
       }
     });
   }
@@ -88,12 +91,12 @@ public class JPAListModel<T> extends LoadableDetachableModel<List<T>> {
   /**
    * Constructor for a list of results in class matching a built criteria.
    * @param objectClass class for root criteria
-   * @param criteriaBuilder builder to apply criteria restrictions
+   * @param predicateBuilder builder to apply criteria restrictions
    */
   public JPAListModel(final Class<T> objectClass,
-      final PredicateBuilder<?> criteriaBuilder) {
-    this.entityClass = objectClass;
-    this.criteriaBuilder = criteriaBuilder;
+      final PredicateBuilder<?> predicateBuilder) {
+    this(objectClass);
+    this.predicateBuilder = predicateBuilder;
   }
 
   /**
@@ -120,27 +123,32 @@ public class JPAListModel<T> extends LoadableDetachableModel<List<T>> {
   }
 
   /**
-   * Load the object List through JPA, binding query parameters if
-   * available.
+   * Load the object List through JPA, binding query parameters if available.
    */
   @SuppressWarnings("unchecked")
   @Override
   protected List<T> load() {
-    final EntityManager em = Databinder.getEntityManager(factoryKey);
     if (queryBuilder != null) {
+      final EntityManager em = Databinder.getEntityManager(factoryKey);
       return queryBuilder.build(em).getResultList();
     }
 
-    final javax.persistence.criteria.CriteriaBuilder cb =
-      em.getCriteriaBuilder();
+    if (predicateBuilder != null) {
+      final List<Predicate> predicates = new ArrayList<Predicate>();
+      predicateBuilder.build(predicates);
+      final CriteriaDefinition<?> cd = predicateBuilder.getCriteriaDefinition();
+      cd.addAllPredicates(predicates);
+      cd.select();
+      cd.perform();
+      return (List<T>) cd.getTypeQuery().getResultList();
+    }
+
+    final EntityManager em = Databinder.getEntityManager(factoryKey);
+    final CriteriaBuilder cb = em.getCriteriaBuilder();
     final CriteriaQuery<T> cq = cb.createQuery(entityClass);
     final Root<T> root = cq.from(entityClass);
     cq.select(root);
     final TypedQuery<T> query = em.createQuery(cq);
-
-    if (criteriaBuilder != null) {
-      criteriaBuilder.build(new ArrayList<Predicate>());
-    }
     return query.getResultList();
   }
 

@@ -14,7 +14,6 @@ package net.databinder.models.jpa;
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import java.io.Serializable;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -24,6 +23,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import net.databinder.jpa.Databinder;
+import net.databinder.util.CriteriaDefinition;
 
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.ISortState;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.ISortStateLocator;
@@ -50,7 +50,7 @@ import org.apache.wicket.extensions.markup.html.repeater.util.SortParam;
  */
 @Deprecated
 public class CriteriaSorter<T> implements ISortStateLocator,
-PredicateBuilder<T>, Serializable {
+PredicateBuilder<T> {
 
   private SingleSortState sortState;
 
@@ -146,6 +146,22 @@ PredicateBuilder<T>, Serializable {
         // criteria.addOrder(order);
         cq.orderBy(order);
     }
+  }
+
+  @Override
+  public PredicateBuilder<T> setCriteriaDefinition(
+      final CriteriaDefinition<T> criteriaDefinition) {
+    return this;
+  }
+
+  @Override
+  public CriteriaDefinition<T> getCriteriaDefinition() {
+    return new CriteriaDefinition<T>(getEntityClass(),
+        Databinder.getEntityManager());
+  }
+
+  public Class<T> getEntityClass() {
+    return entityClass;
   }
 
 }

@@ -23,10 +23,10 @@ import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 
 import net.databinder.jpa.Databinder;
 import net.databinder.models.PropertyDataProvider;
+import net.databinder.util.CriteriaDefinition;
 
 import org.apache.wicket.model.IModel;
 
@@ -46,41 +46,51 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
   /** */
   private static final long serialVersionUID = 1L;
   private Class<T> entityClass;
-  private OrderingPredicateBuilder criteriaBuilder;
-  private QueryBuilder queryBuilder, countQueryBuilder;
+  private OrderingPredicateBuilder<T> orderingPredicateBuilder;
+  private QueryBuilder queryBuilder;
+  private QueryBuilder countQueryBuilder;
 
   private String factoryKey;
-
-  final CriteriaBuilder cb;
-  final CriteriaQuery<T> cq;
-  final Root<T> root;
+  private CriteriaDefinition<T> criteriaDefinition;
 
   /**
    * Provides all entities of the given class.
    */
   public JPAProvider(final Class<T> objectClass) {
     this.entityClass = objectClass;
-    final EntityManager em = Databinder.getEntityManager();
-    cb = em.getCriteriaBuilder();
-    cq = cb.createQuery(entityClass);
-    root = cq.from(entityClass);
+    criteriaDefinition =
+      new CriteriaDefinition<T>(objectClass, Databinder.getEntityManager());
   }
 
   /** Provides entities of the given class meeting the supplied criteria. */
   public JPAProvider(final Class<T> objectClass,
-      final PredicateBuildAndSort<T> criteriaBuilder, final String orderProperty) {
-    this(objectClass, new OrderingPredicateBuilder() {
+      final PredicateBuildAndSort<T> predicateOrderingBuilder,
+      final String orderProperty) {
+    this(objectClass, new OrderingPredicateBuilder<T>() {
 
       private static final long serialVersionUID = 1L;
+      private CriteriaDefinition<T> criteriaDefinition;
 
       @Override
-      public void buildUnordered(final List<Predicate> criteria) {
-        criteriaBuilder.buildUnordered(criteria);
+      public void buildUnordered(final List<Predicate> predicates) {
+        predicateOrderingBuilder.buildUnordered(predicates);
       }
 
       @Override
       public void buildOrdered(final List<Predicate> criteria) {
-        criteriaBuilder.buildOrdered(criteria);
+        predicateOrderingBuilder.buildOrdered(criteria);
+      }
+
+      @Override
+      public OrderingPredicateBuilder<T> setCriteriaDefinition(
+          final CriteriaDefinition<T> criteriaDefinition) {
+        this.criteriaDefinition = criteriaDefinition;
+        return this;
+      }
+
+      @Override
+      public CriteriaDefinition<T> getCriteriaDefinition() {
+        return criteriaDefinition;
       }
     });
   }
@@ -90,27 +100,42 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
    * for the order query.
    * @param entityClass
    * @param predicateBuilder base criteria builder
-   * @param predicateOrderingBuilder add ordering information ONLY, base criteria
-   *          will be called first
+   * @param predicateOrderingBuilder add ordering information ONLY, base
+   *          criteria will be called first
    */
   public JPAProvider(final Class<T> entityClass,
       final PredicateBuilder<T> predicateBuilder,
       final PredicateBuilder<T> predicateOrderingBuilder,
       final String orderProperty) {
     this(entityClass);
-    cq.select(root);
-
-    this.criteriaBuilder = new OrderingPredicateBuilder() {
+    criteriaDefinition =
+      new CriteriaDefinition<T>(entityClass, Databinder.getEntityManager());
+    this.orderingPredicateBuilder = new OrderingPredicateBuilder<T>() {
       private static final long serialVersionUID = 1L;
 
       @Override
       public void buildOrdered(final List<Predicate> criteria) {
-        cq.orderBy(cb.asc(root.get(orderProperty)));
+        criteriaDefinition.getCriteriaQuery().orderBy(
+            criteriaDefinition.getCriteriaBuilder().asc(
+                criteriaDefinition.getRoot().get(orderProperty)));
       }
 
       @Override
       public void buildUnordered(final List<Predicate> criteria) {
-        cq.orderBy(cb.asc(root.get(orderProperty)));
+        criteriaDefinition.getCriteriaQuery().orderBy(
+            criteriaDefinition.getCriteriaBuilder().asc(
+                criteriaDefinition.getRoot().get(orderProperty)));
+      }
+
+      @Override
+      public OrderingPredicateBuilder<T> setCriteriaDefinition(
+          final CriteriaDefinition<T> criteriaDefinition) {
+        return this;
+      }
+
+      @Override
+      public CriteriaDefinition<T> getCriteriaDefinition() {
+        return criteriaDefinition;
       }
     };
   }
@@ -122,16 +147,17 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
    *          size()
    */
   public JPAProvider(final Class<T> objectClass,
-      final OrderingPredicateBuilder criteriaBuider) {
+      final OrderingPredicateBuilder<T> criteriaBuider) {
     this(objectClass);
-    this.criteriaBuilder = criteriaBuider;
+    this.orderingPredicateBuilder = criteriaBuider;
   }
 
   /** Provides entities of the given class meeting the supplied criteria. */
   public JPAProvider(final Class<T> objectClass,
       final net.databinder.models.jpa.PredicateBuilder<T> criteriaBuilder) {
-    this(objectClass, new OrderingPredicateBuilder() {
+    this(objectClass, new OrderingPredicateBuilder<T>() {
       private static final long serialVersionUID = 1L;
+      private CriteriaDefinition<T> criteriaDefinition;
 
       @Override
       public void buildUnordered(final List<Predicate> criteria) {
@@ -142,6 +168,19 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
       public void buildOrdered(final List<Predicate> criteria) {
         criteriaBuilder.build(criteria);
       }
+
+      @Override
+      public OrderingPredicateBuilder<T> setCriteriaDefinition(
+          final CriteriaDefinition<T> criteriaDefinition) {
+        this.criteriaDefinition = criteriaDefinition;
+        return this;
+      }
+
+      @Override
+      public CriteriaDefinition<T> getCriteriaDefinition() {
+        return criteriaDefinition;
+      }
+
     });
   }
 
@@ -167,26 +206,26 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
   @Override
   @SuppressWarnings("unchecked")
   public Iterator<T> iterator(final int first, final int count) {
-    final EntityManager em = Databinder.getEntityManager();
-    cq.select(root);
+    final CriteriaDefinition<T> cq = getCriteriaDefinition();
     if (queryBuilder != null) {
-      final Query q = queryBuilder.build(em);
+      cq.select();
+      final Query q = queryBuilder.build(cq.getEntityManager());
       q.setFirstResult(first);
       q.setMaxResults(count);
       return q.getResultList().iterator();
     }
 
     final List<Predicate> predicates = new ArrayList<Predicate>();
-    if (criteriaBuilder != null) {
-      criteriaBuilder.buildOrdered(predicates);
+    if (orderingPredicateBuilder != null) {
+      orderingPredicateBuilder.buildOrdered(predicates);
     }
     if (queryBuilder != null) {
-      queryBuilder.build(em);
+      queryBuilder.build(cq.getEntityManager());
     }
-    cq.select(root);
-    cq.where(cb.and(predicates.toArray(new Predicate[0])));
+    cq.select();
+    cq.perform();
 
-    final TypedQuery<T> query = em.createQuery(cq);
+    final TypedQuery<T> query = cq.getTypeQuery();
     query.setFirstResult(first);
     query.setMaxResults(count);
     return query.getResultList().iterator();
@@ -210,8 +249,8 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
       return ((Number) obj).intValue();
     }
 
-    if (criteriaBuilder != null) {
-      criteriaBuilder.buildUnordered(predicates);
+    if (orderingPredicateBuilder != null) {
+      orderingPredicateBuilder.buildUnordered(predicates);
     }
     final TypedQuery<Long> query = em.createQuery(cq);
     return query.getSingleResult().intValue();
@@ -225,5 +264,9 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
   /** does nothing */
   @Override
   public void detach() {
+  }
+
+  public CriteriaDefinition<T> getCriteriaDefinition() {
+    return criteriaDefinition;
   }
 }

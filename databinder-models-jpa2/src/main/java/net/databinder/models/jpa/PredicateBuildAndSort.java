@@ -25,6 +25,8 @@ import java.util.List;
 
 import javax.persistence.criteria.Predicate;
 
+import net.databinder.util.CriteriaDefinition;
+
 import org.apache.wicket.extensions.markup.html.repeater.util.SingleSortState;
 import org.apache.wicket.extensions.markup.html.repeater.util.SortParam;
 
@@ -41,8 +43,8 @@ BasePredicateBuildAndSort<T> {
 
   public PredicateBuildAndSort(final String defaultSortProperty,
       final boolean sortAscending, final boolean sortCased,
-      final Class<T> entityClass) {
-    super(defaultSortProperty, sortAscending, sortCased, entityClass);
+      final CriteriaDefinition<T> criteriaDefinition) {
+    super(defaultSortProperty, sortAscending, sortCased, criteriaDefinition);
   }
 
   @Override

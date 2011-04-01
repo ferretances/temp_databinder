@@ -3,20 +3,18 @@ package net.databinder.components.jpa;
 import static net.databinder.util.JPAUtil.propertyStringExpressionToPath;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import net.databinder.components.AjaxCell;
 import net.databinder.components.AjaxOnKeyPausedUpdater;
-import net.databinder.jpa.Databinder;
+import net.databinder.models.jpa.BasicPredicateBuilder;
 import net.databinder.models.jpa.PredicateBuilder;
 import net.databinder.models.jpa.PropertyQueryBinder;
+import net.databinder.util.CriteriaDefinition;
 import net.databinder.util.JPAUtil;
 
 import org.apache.wicket.MarkupContainer;
@@ -93,25 +91,28 @@ public abstract class SearchPanel<T extends Serializable> extends Panel {
    */
   public PredicateBuilder<T> getCriteriaBuilder(final Class<T> entityClass,
       final String... searchProperty) {
-    return new PredicateBuilder<T>() {
+    return new BasicPredicateBuilder<T>(entityClass) {
       private static final long serialVersionUID = 1L;
 
+      @Override
       public void build(final List<Predicate> predicates) {
         final String search = (String) getDefaultModelObject();
         if (search != null) {
-          final EntityManager em = Databinder.getEntityManager();
-          final CriteriaBuilder cb = em.getCriteriaBuilder();
-          final CriteriaQuery<T> cq = cb.createQuery(entityClass);
-          final Root<T> root = cq.from(entityClass);
-          final List<Predicate> crit = new ArrayList<Predicate>();
+          final CriteriaDefinition<T> cd = getCriteriaDefinition();
+          final CriteriaBuilder cb = cd.getCriteriaBuilder();
+          final Root<T> root = cd.getRoot();
           for (final String prop : searchProperty) {
             final Predicate p =
               cb.like(cb.lower(propertyStringExpressionToPath(root, prop)),
                   getSearch());
-            crit.add(p);
+            cd.addPredicate(p);
           }
-          cq.where(cb.and(crit.toArray(new Predicate[0])));
         }
+      }
+
+      @Override
+      protected Class<T> getEntityClass() {
+        return entityClass;
       }
     };
   }

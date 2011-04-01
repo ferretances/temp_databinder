@@ -20,7 +20,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceException;
+import javax.persistence.PersistenceUnitUtil;
 import javax.persistence.Version;
 import javax.persistence.criteria.Predicate;
 
@@ -44,7 +46,7 @@ BindingModel<T> {
 
   private static final long serialVersionUID = 1L;
 
-  private Class<T> objectClass;
+  private Class<T> entityClass;
   private Object objectId;
   private QueryBuilder queryBuilder;
   private PredicateBuilder<?> criteriaBuilder;
@@ -63,7 +65,7 @@ BindingModel<T> {
    * @param entityId id of the persistent object
    */
   public JPAObjectModel(final Class<T> objectClass, final Serializable entityId) {
-    this.objectClass = objectClass;
+    this.entityClass = objectClass;
     this.objectId = entityId;
   }
 
@@ -76,7 +78,7 @@ BindingModel<T> {
    * @param objectClass class to be loaded and stored by Hibernate
    */
   public JPAObjectModel(final Class<T> objectClass) {
-    this.objectClass = objectClass;
+    this.entityClass = objectClass;
   }
 
   /**
@@ -111,7 +113,7 @@ BindingModel<T> {
    */
   public JPAObjectModel(final Class<T> objectClass,
       final PredicateBuilder<T> criteriaBuilder) {
-    this.objectClass = objectClass;
+    this.entityClass = objectClass;
     this.criteriaBuilder = criteriaBuilder;
   }
 
@@ -157,14 +159,14 @@ BindingModel<T> {
   @Override
   public void setObject(final T object) {
     unbind(); // clear everything but class, name
-    objectClass = null;
+    entityClass = null;
 
     if (object != null) {
       T obj = object;
       if (object instanceof IChainingModel<?>) {
         obj = (T) ((IChainingModel<?>) object).getObject();
       }
-      objectClass = (Class<T>) obj.getClass();
+      entityClass = (Class<T>) obj.getClass();
       final EntityManager em = Databinder.getEntityManager(factoryKey);
       if (em.contains(obj)) {
         objectId =
@@ -179,19 +181,21 @@ BindingModel<T> {
   }
 
   public Object getIdentifier() {
-    return Databinder.getEntityManager().getEntityManagerFactory()
-    .getPersistenceUnitUtil().getIdentifier(getObject());
+    final EntityManager em = Databinder.getEntityManager();
+    final EntityManagerFactory emf = em.getEntityManagerFactory();
+    final PersistenceUnitUtil pu = emf.getPersistenceUnitUtil();
+    return pu.getIdentifier(getObject());
   }
 
   /**
-   * Load the object through Hibernate, contruct a new instance if it is not
+   * Load the object through JPA, contruct a new instance if it is not
    * bound to an id, or use unsaved retained object. Returns null if no criteria
    * needed to load or construct an object are available.
    */
   @SuppressWarnings("unchecked")
   @Override
   protected T load() {
-    if (objectClass == null && queryBuilder == null) {
+    if (entityClass == null && queryBuilder == null) {
       return null; // can't load without one of these
     }
     try {
@@ -200,13 +204,13 @@ BindingModel<T> {
           return retainedObject;
         } else if (retainUnsaved) {
           try {
-            return retainedObject = objectClass.newInstance();
+            return retainedObject = entityClass.newInstance();
           } catch (final ClassCastException e) {
             throw new WicketRuntimeException(
-            "Unsaved entity must be Serializable or retainUnsaved set to false; see HibernateObjectModel javadocs.");
+            "Unsaved entity must be Serializable or retainUnsaved set to false; see JPAObjectModel javadocs.");
           }
         } else {
-          return objectClass.newInstance();
+          return entityClass.newInstance();
         }
       }
     } catch (final ClassCastException e) {
@@ -220,7 +224,7 @@ BindingModel<T> {
     }
     final EntityManager em = Databinder.getEntityManager(factoryKey);
     if (objectId != null) {
-      return em.find(objectClass, objectId);
+      return em.getReference(entityClass, objectId);
     }
 
     if (criteriaBuilder != null) {

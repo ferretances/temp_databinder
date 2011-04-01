@@ -5,13 +5,22 @@ import java.util.List;
 
 import javax.persistence.criteria.Predicate;
 
+import net.databinder.util.CriteriaDefinition;
+
 /**
  * Builds criteria objects with or without order. Only one of the build methods
  * should be called in building a criteria object.
  */
-public interface OrderingPredicateBuilder extends Serializable {
+public interface OrderingPredicateBuilder<T> extends Serializable {
+
+  public OrderingPredicateBuilder<T> setCriteriaDefinition(
+      CriteriaDefinition<T> criteriaDefinition);
+
+  public CriteriaDefinition<T> getCriteriaDefinition();
+
   /** Build the criteria without setting an order */
-  public void buildUnordered(List<Predicate>  criteria);
+  public void buildUnordered(List<Predicate> predicates);
+
   /** Build the (entire) criteria, including an order */
-  public void buildOrdered(List<Predicate> criteria);
+  public void buildOrdered(List<Predicate> predicates);
 }
