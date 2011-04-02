@@ -24,7 +24,6 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 
-import net.databinder.jpa.Databinder;
 import net.databinder.models.PropertyDataProvider;
 import net.databinder.util.CriteriaDefinition;
 
@@ -45,30 +44,33 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
 
   /** */
   private static final long serialVersionUID = 1L;
-  private Class<T> entityClass;
+
   private OrderingPredicateBuilder<T> orderingPredicateBuilder;
+
   private QueryBuilder queryBuilder;
+
   private QueryBuilder countQueryBuilder;
 
   private String factoryKey;
+
   private CriteriaDefinition<T> criteriaDefinition;
 
   /**
    * Provides all entities of the given class.
+   * @param criteriaDefinition
    */
-  public JPAProvider(final Class<T> objectClass) {
-    this.entityClass = objectClass;
-    criteriaDefinition =
-      new CriteriaDefinition<T>(objectClass, Databinder.getEntityManager());
+  public JPAProvider(final CriteriaDefinition<T> criteriaDefinition) {
+    this.criteriaDefinition = criteriaDefinition;
   }
 
   /** Provides entities of the given class meeting the supplied criteria. */
-  public JPAProvider(final Class<T> objectClass,
+  public JPAProvider(final CriteriaDefinition<T> criteriaDefinition,
       final PredicateBuildAndSort<T> predicateOrderingBuilder,
       final String orderProperty) {
-    this(objectClass, new OrderingPredicateBuilder<T>() {
+    this(criteriaDefinition, new OrderingPredicateBuilder<T>() {
 
       private static final long serialVersionUID = 1L;
+
       private CriteriaDefinition<T> criteriaDefinition;
 
       @Override
@@ -98,20 +100,19 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
   /**
    * Provides all entities of the given class using a distinct criteria builder
    * for the order query.
-   * @param entityClass
+   * @param criteriaDefinition
    * @param predicateBuilder base criteria builder
    * @param predicateOrderingBuilder add ordering information ONLY, base
    *          criteria will be called first
    */
-  public JPAProvider(final Class<T> entityClass,
+  public JPAProvider(final CriteriaDefinition<T> criteriaDefinition,
       final PredicateBuilder<T> predicateBuilder,
       final PredicateBuilder<T> predicateOrderingBuilder,
       final String orderProperty) {
-    this(entityClass);
-    criteriaDefinition =
-      new CriteriaDefinition<T>(entityClass, Databinder.getEntityManager());
-    this.orderingPredicateBuilder = new OrderingPredicateBuilder<T>() {
+    this(criteriaDefinition);
+    orderingPredicateBuilder = new OrderingPredicateBuilder<T>() {
       private static final long serialVersionUID = 1L;
+      private CriteriaDefinition<T> criteriaDefinition;
 
       @Override
       public void buildOrdered(final List<Predicate> criteria) {
@@ -130,6 +131,7 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
       @Override
       public OrderingPredicateBuilder<T> setCriteriaDefinition(
           final CriteriaDefinition<T> criteriaDefinition) {
+        this.criteriaDefinition = criteriaDefinition;
         return this;
       }
 
@@ -146,17 +148,19 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
    * @param criteriaBuider builds different criteria objects for iterator() and
    *          size()
    */
-  public JPAProvider(final Class<T> objectClass,
+  public JPAProvider(final CriteriaDefinition<T> criteriaDefinition,
       final OrderingPredicateBuilder<T> criteriaBuider) {
-    this(objectClass);
-    this.orderingPredicateBuilder = criteriaBuider;
+    this(criteriaDefinition);
+    orderingPredicateBuilder = criteriaBuider;
   }
 
   /** Provides entities of the given class meeting the supplied criteria. */
-  public JPAProvider(final Class<T> objectClass,
-      final net.databinder.models.jpa.PredicateBuilder<T> criteriaBuilder) {
-    this(objectClass, new OrderingPredicateBuilder<T>() {
+  public JPAProvider(final CriteriaDefinition<T> criteriaDefinition,
+      final PredicateBuilder<T> criteriaBuilder) {
+    this(criteriaDefinition, new OrderingPredicateBuilder<T>() {
+
       private static final long serialVersionUID = 1L;
+
       private CriteriaDefinition<T> criteriaDefinition;
 
       @Override
@@ -195,7 +199,7 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
    * @return this, for chaining
    */
   public JPAProvider<T> setFactoryKey(final String key) {
-    this.factoryKey = key;
+    factoryKey = key;
     return this;
   }
 
@@ -237,12 +241,12 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
    */
   @Override
   public int size() {
-    final EntityManager em = Databinder.getEntityManager(getFactoryKey());
+    final EntityManager em = criteriaDefinition.getEntityManager();
     final CriteriaBuilder cb = em.getCriteriaBuilder();
     final CriteriaQuery<Long> cq = cb.createQuery(Long.class);
 
     final List<Predicate> predicates = new ArrayList<Predicate>();
-    cq.select(cb.count(cq.from(entityClass)));
+    cq.select(cb.count(cq.from(criteriaDefinition.getEntityClass())));
     if (countQueryBuilder != null) {
       final Query q = countQueryBuilder.build(em);
       final Object obj = q.getSingleResult();

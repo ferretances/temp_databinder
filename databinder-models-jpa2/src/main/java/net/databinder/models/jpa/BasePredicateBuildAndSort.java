@@ -75,9 +75,8 @@ OrderingPredicateBuilder<T>, Serializable, ISortStateLocator {
   @Override
   public void buildOrdered(final List<Predicate> predicates) {
     buildUnordered(predicates);
-    String property = defaultSortProperty;
+    final String property = defaultSortProperty;
     if (property != null) {
-      property = processProperty(predicates, property);
       final CriteriaDefinition<T> cd = getCriteriaDefinition();
       cd.getCriteriaQuery().orderBy(
           sortAscending ? cd.getCriteriaBuilder().asc(

@@ -35,11 +35,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Supports extended JPA sessions for long conversations. This is useful
- * for a page or a series of pages where changes are made to an entity that can
- * not be immediately committed. Using a "conversation" session,
- * JPAObjectModels are used normally, but until the session is flushed the
- * changes are not made to persistent storage.
+ * Supports extended JPA sessions for long conversations. This is useful for a
+ * page or a series of pages where changes are made to an entity that can not be
+ * immediately committed. Using a "conversation" session, JPAObjectModels are
+ * used normally, but until the session is flushed the changes are not made to
+ * persistent storage.
  * @author Nathan Hamblen
  */
 public class DataConversationRequestCycle extends DataRequestCycle {
@@ -97,8 +97,7 @@ public class DataConversationRequestCycle extends DataRequestCycle {
           keys.add(key);
           return;
         } catch (final PersistenceException e) {
-          log.warn(
-              "Existing em exception on beginTransation, opening new", e);
+          log.warn("Existing em exception on beginTransation, opening new", e);
         }
       }
       // else start new one and set in page
@@ -112,8 +111,8 @@ public class DataConversationRequestCycle extends DataRequestCycle {
   }
 
   /**
-   * Inspects responding page to determine if current JPA em should
-   * be closed or left open and stored in the page.
+   * Inspects responding page to determine if current JPA em should be closed or
+   * left open and stored in the page.
    */
   @Override
   protected void onEndRequest() {
@@ -147,7 +146,8 @@ public class DataConversationRequestCycle extends DataRequestCycle {
           em.close();
         }
       }
-      ManagedEntityManagerContext.unbind(Databinder.getEntityManager(key).getEntityManagerFactory());
+      ManagedEntityManagerContext.unbind(Databinder.getEntityManager(key)
+          .getEntityManagerFactory());
     }
   }
 

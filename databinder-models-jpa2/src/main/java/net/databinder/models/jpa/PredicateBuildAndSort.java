@@ -31,7 +31,7 @@ import org.apache.wicket.extensions.markup.html.repeater.util.SingleSortState;
 import org.apache.wicket.extensions.markup.html.repeater.util.SortParam;
 
 /**
- * Abstract base class for building OrderedCriteriaBuilders. Uses an
+ * Abstract base class for building OrderingPredicateBuilders. Uses an
  * ISortStateLocator to configure the sorting. Subclasses should call
  * super.buildUnordered() when overriding.
  * @author Mark Southern
@@ -61,7 +61,6 @@ BasePredicateBuildAndSort<T> {
     }
 
     if (property != null) {
-      property = processProperty(criteria, property);
       super.buildOrdered(criteria);
     }
   }

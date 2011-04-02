@@ -34,7 +34,7 @@ import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.model.IChainingModel;
 
 /**
- * Model loaded and persisted by Hibernate. This central Databinder class can be
+ * Model loaded and persisted by JPA. This central Databinder class can be
  * initialized with an entity ID, different types of queries, or an existing
  * persistent object. As a writable Wicket model, the object it contains may be
  * swapped at any time for a different persistent object, a Serializable object,
@@ -103,9 +103,9 @@ BindingModel<T> {
   }
 
   /**
-   * Construct with a class and criteria binder that return exactly one result.
+   * Construct with a class and predicate binder that return exactly one result.
    * Use this for fetch instructions, scalar results, or if the persistent
-   * object ID is not available. Criteria that return more than one result will
+   * object ID is not available. Predicate that return more than one result will
    * produce exceptions. Criteria that return no result will produce a null
    * object.
    * @param objectClass class of object for root criteria
@@ -133,7 +133,7 @@ BindingModel<T> {
   public JPAObjectModel() {
   }
 
-  /** @return session factory key, or null for the default factory */
+  /** @return entity manager factory key, or null for the default factory */
   public String getFactoryKey() {
     return factoryKey;
   }
@@ -152,8 +152,8 @@ BindingModel<T> {
    * Change the persistent object contained in this model. Because this method
    * establishes a persistent object ID, queries and binders are removed if
    * present.
-   * @param object must be an entity contained in the current Hibernate session,
-   *          or Serializable, or null
+   * @param object must be an entity contained in the current JPA
+   *          {@link EntityManager}, or Serializable, or null
    */
   @SuppressWarnings("unchecked")
   @Override
@@ -188,9 +188,9 @@ BindingModel<T> {
   }
 
   /**
-   * Load the object through JPA, contruct a new instance if it is not
-   * bound to an id, or use unsaved retained object. Returns null if no criteria
-   * needed to load or construct an object are available.
+   * Load the object through JPA, contruct a new instance if it is not bound to
+   * an id, or use unsaved retained object. Returns null if no criteria needed
+   * to load or construct an object are available.
    */
   @SuppressWarnings("unchecked")
   @Override

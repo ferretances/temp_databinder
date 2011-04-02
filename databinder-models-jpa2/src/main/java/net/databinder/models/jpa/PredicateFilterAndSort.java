@@ -48,9 +48,9 @@ import org.apache.wicket.util.lang.PropertyResolverConverter;
  * An OrderingPredicateBuilder implementation that can be wired to a
  * FilterToolbar String properties are searched via an iLike. Number properties
  * can specify >, >=, < or <= Example usage (from baseball player example);
- * CriteriaFilterAndSort builder = new CriteriaFilterAndSort(new Player(),
+ * CriteriaFilterAndSort builder = new PredicateFilterAndSort(new Player(),
  * "nameLast", true, false); FilterForm form = new FilterForm("form", builder);
- * HibernateProvider provider = new HibernateProvider(Player.class, builder);
+ * JPAProvider provider = new JPAProvider(Player.class, builder);
  * provider.setWrapWithPropertyModel(false); DataTable table = new
  * DataTable("players", columns, provider, 25) {
  * @Override protected Item newRowItem(String id, int index, IModel model) {
@@ -92,7 +92,6 @@ implements IFilterStateLocator<T> {
         continue;
       }
 
-      final String prop = processProperty(predicates, property);
       final Class<?> clazz = PropertyResolver.getPropertyClass(property, bean);
 
       final CriteriaDefinition<T> cd = getCriteriaDefinition();
@@ -106,7 +105,7 @@ implements IFilterStateLocator<T> {
                 cb
                 .lower(
                     JPAUtil.propertyStringExpressionToPath(root,
-                        prop)), JPAUtil.likePattern(item));
+                        property)), JPAUtil.likePattern(item));
           predicates.add(p);
         }
       } else if (Number.class.isAssignableFrom(clazz)) {
@@ -119,28 +118,28 @@ implements IFilterStateLocator<T> {
             if (">".equals(qualifier)) {
               final Predicate p =
                 cb.gt(
-                    propertyNumberExpressionToPath(root, prop), num);
+                    propertyNumberExpressionToPath(root, property), num);
               predicates.add(p);
             } else if ("<".equals(qualifier)) {
               final Predicate p =
                 cb.lt(
-                    propertyNumberExpressionToPath(root, prop), num);
+                    propertyNumberExpressionToPath(root, property), num);
               predicates.add(p);
             } else if (">=".equals(qualifier)) {
               final Predicate p =
                 cb.ge(
-                    propertyNumberExpressionToPath(root, prop), num);
+                    propertyNumberExpressionToPath(root, property), num);
               predicates.add(p);
             } else if ("<=".equals(qualifier)) {
               final Predicate p =
                 cb.le(
-                    propertyNumberExpressionToPath(root, prop), num);
+                    propertyNumberExpressionToPath(root, property), num);
               predicates.add(p);
             }
           } else {
             final Predicate p =
               cb.equal(
-                  propertyNumberExpressionToPath(root, prop),
+                  propertyNumberExpressionToPath(root, property),
                   convertToNumber(value, clazz));
             predicates.add(p);
           }
@@ -149,7 +148,7 @@ implements IFilterStateLocator<T> {
         }
       } else if (Boolean.class.isAssignableFrom(clazz)) {
         final Predicate p =
-          cb.equal(propertyBooleanExpressionToPath(root, prop),
+          cb.equal(propertyBooleanExpressionToPath(root, property),
               Boolean.parseBoolean(value));
         predicates.add(p);
       }

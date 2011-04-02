@@ -36,5 +36,5 @@ public interface EntityManagerUnit {
    * @return object to be returned by DataStaticService.ensureSession()
    * @see Databinder
    */
-  Object run(EntityManager em);
+  Object run(final EntityManager em);
 }

@@ -18,20 +18,10 @@ public abstract class BasicPredicateBuilder<T> implements PredicateBuilder<T> {
 
   private CriteriaDefinition<T> criteriaDefinition;
 
-  protected Class<T> entityClass;
-
-  public BasicPredicateBuilder() {
-    criteriaDefinition =
-      new CriteriaDefinition<T>(getEntityClass(),
-          Databinder.getEntityManager());
-  }
-
   public BasicPredicateBuilder(final Class<T> entityClass) {
-    this.entityClass = entityClass;
     criteriaDefinition =
       new CriteriaDefinition<T>(entityClass, Databinder.getEntityManager());
   }
-
 
   public BasicPredicateBuilder(final CriteriaDefinition<T> criteriaDefinition) {
     this.criteriaDefinition = criteriaDefinition;
@@ -52,8 +42,5 @@ public abstract class BasicPredicateBuilder<T> implements PredicateBuilder<T> {
   @Override
   public void build(final List<Predicate> predicates) {
   }
-
-  protected abstract Class<T> getEntityClass();
-
 
 }

@@ -16,8 +16,11 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.IModel;
 
 /**
- * User administration page. Lists all users, allows editing usernames, passwords, and roles.
- * Must have Role.ADMIN to view. Replaceable String resources: <pre>
+ * User administration page. Lists all users, allows editing usernames,
+ * passwords, and roles. Must have Role.ADMIN to view. Replaceable String
+ * resources:
+ * 
+ * <pre>
  * data.auth.user_admin
  * data.auth.user_add
  * data.auth.username
@@ -25,7 +28,8 @@ import org.apache.wicket.model.IModel;
  * data.auth.passwordConfirm
  * data.auth.roles
  * data.auth.save
- * data.auth.delete</pre>
+ * data.auth.delete
+ * </pre>
  * @see AuthSession
  */
 public class UserAdminPage<T extends DataUser> extends UserAdminPageBase<T> {
@@ -39,21 +43,26 @@ public class UserAdminPage<T extends DataUser> extends UserAdminPageBase<T> {
   @Override
   protected Button deleteButton(final String id) {
     return new Button("delete") {
+      private static final long serialVersionUID = 1L;
+
       @Override
       public void onSubmit() {
-        final EntityManager em = net.databinder.jpa.Databinder.getEntityManager();
+        final EntityManager em =
+          net.databinder.jpa.Databinder.getEntityManager();
         em.remove(getUserForm().getModelObject());
         em.getTransaction().commit();
         form.clearPersistentObject();
       }
+
+      @SuppressWarnings("unchecked")
       @Override
       public boolean isEnabled() {
-        return !((AuthSession)getSession()).getUser().equals(getUserForm().getModelObject())
-        && getBindingModel().isBound();
+        return !((AuthSession<T>) getSession()).getUser().equals(
+            getUserForm().getModelObject())
+            && getBindingModel().isBound();
       }
     }.setDefaultFormProcessing(false);
   }
-
 
   @Override
   protected DataUserStatusPanelBase statusPanel(final String id) {

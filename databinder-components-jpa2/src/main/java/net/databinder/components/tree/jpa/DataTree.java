@@ -66,6 +66,11 @@ public abstract class DataTree<T extends DataTreeObject<T>> extends BaseTree {
    */
   public static class TopLevelCriteriaBuilder<T> extends
   BasicPredicateBuilder<T> {
+
+    public TopLevelCriteriaBuilder(final Class<T> entityClass) {
+      super(entityClass);
+    }
+
     private static final long serialVersionUID = 1L;
 
     /**
@@ -84,10 +89,6 @@ public abstract class DataTree<T extends DataTreeObject<T>> extends BaseTree {
       cd.addAllPredicates(predicates);
     }
 
-    @Override
-    protected Class<T> getEntityClass() {
-      return null;
-    }
   }
 
   public DefaultMutableTreeNode clear(final AjaxRequestTarget target) {

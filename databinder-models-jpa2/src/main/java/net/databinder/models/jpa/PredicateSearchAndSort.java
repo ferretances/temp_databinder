@@ -57,7 +57,7 @@ public class PredicateSearchAndSort<T> extends PredicateBuildAndSort<T> {
 
       final List<String> properties = new ArrayList<String>();
       for (final String prop : getSearchProperties()) {
-        properties.add(processProperty(predicates, prop));
+        properties.add(prop);
       }
 
       final CriteriaDefinition<T> cd = getCriteriaDefinition();
@@ -66,7 +66,8 @@ public class PredicateSearchAndSort<T> extends PredicateBuildAndSort<T> {
       for (final String item : items) {
         for (final String prop : properties) {
           final Predicate p =
-            cb.like(cb.lower(propertyStringExpressionToPath(cd.getRoot(), prop)),
+            cb.like(
+                cb.lower(propertyStringExpressionToPath(cd.getRoot(), prop)),
                 JPAUtil.likePattern(item));
           predicates.add(p);
         }

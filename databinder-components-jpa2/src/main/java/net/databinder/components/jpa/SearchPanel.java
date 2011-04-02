@@ -3,7 +3,6 @@ package net.databinder.components.jpa;
 import static net.databinder.util.JPAUtil.propertyStringExpressionToPath;
 
 import java.io.Serializable;
-import java.util.List;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
@@ -11,8 +10,6 @@ import javax.persistence.criteria.Root;
 
 import net.databinder.components.AjaxCell;
 import net.databinder.components.AjaxOnKeyPausedUpdater;
-import net.databinder.models.jpa.BasicPredicateBuilder;
-import net.databinder.models.jpa.PredicateBuilder;
 import net.databinder.models.jpa.PropertyQueryBinder;
 import net.databinder.util.CriteriaDefinition;
 import net.databinder.util.JPAUtil;
@@ -21,6 +18,7 @@ import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
@@ -41,18 +39,30 @@ public abstract class SearchPanel<T extends Serializable> extends Panel {
 
   private TextField<String> search;
 
+  private final CriteriaDefinition<T> criteriaDefinition;
+
+  private final boolean ajaxOnKeyPausedUpdater;
+
   /**
    * @param id Wicket id
    */
-  public SearchPanel(final String id) {
+  public SearchPanel(final String id,
+      final CriteriaDefinition<T> criteriaDefinition,
+      final boolean ajaxOnKeyPausedUpdater, final String... searchProperties) {
     super(id, new Model<String>());
-    add(new SearchForm("searchForm"));
+    this.ajaxOnKeyPausedUpdater = ajaxOnKeyPausedUpdater;
+    this.criteriaDefinition = criteriaDefinition;
+    add(new SearchForm("searchForm", searchProperties));
   }
 
   /** Use the given model (must not be read-only ) for the search string */
-  public SearchPanel(final String id, final IModel<String> searchModel) {
+  public SearchPanel(final String id, final IModel<String> searchModel,
+      final CriteriaDefinition<T> criteriaDefinition,
+      final boolean ajaxOnKeyPausedUpdater, final String... searchPropertiess) {
     super(id, searchModel);
-    add(new SearchForm("searchForm"));
+    this.ajaxOnKeyPausedUpdater = ajaxOnKeyPausedUpdater;
+    this.criteriaDefinition = criteriaDefinition;
+    add(new SearchForm("searchForm", searchPropertiess));
   }
 
   @Override
@@ -83,40 +93,6 @@ public abstract class SearchPanel<T extends Serializable> extends Panel {
     return new PropertyQueryBinder(this, params);
   }
 
-  /**
-   * Adds a criterion that will match the current search string anywhere within
-   * any of the given properties. If the search is empty, no criterion is added.
-   * @param searchProperty one or more properties to be searched
-   * @return builder to be used with list model or data provider
-   */
-  public PredicateBuilder<T> getCriteriaBuilder(final Class<T> entityClass,
-      final String... searchProperty) {
-    return new BasicPredicateBuilder<T>(entityClass) {
-      private static final long serialVersionUID = 1L;
-
-      @Override
-      public void build(final List<Predicate> predicates) {
-        final String search = (String) getDefaultModelObject();
-        if (search != null) {
-          final CriteriaDefinition<T> cd = getCriteriaDefinition();
-          final CriteriaBuilder cb = cd.getCriteriaBuilder();
-          final Root<T> root = cd.getRoot();
-          for (final String prop : searchProperty) {
-            final Predicate p =
-              cb.like(cb.lower(propertyStringExpressionToPath(root, prop)),
-                  getSearch());
-            cd.addPredicate(p);
-          }
-        }
-      }
-
-      @Override
-      protected Class<T> getEntityClass() {
-        return entityClass;
-      }
-    };
-  }
-
   /** @return search string bracketed by the % wildcard */
   public String getSearch() {
     final Object defaultModelObject = getDefaultModelObject();
@@ -137,15 +113,13 @@ public abstract class SearchPanel<T extends Serializable> extends Panel {
     /** */
     private static final long serialVersionUID = 1L;
 
-    @SuppressWarnings("unchecked")
-    public SearchForm(final String id) {
+    public SearchForm(final String id, final String... searchProperties) {
       super(id);
 
       final AjaxCell searchWrap = new AjaxCell("searchWrap");
       add(searchWrap);
       search =
-        new TextField<String>("searchInput",
-            (IModel<String>) SearchPanel.this.getDefaultModel());
+        new TextField<String>("searchInput", SearchPanel.this.getModel());
       search.setOutputMarkupId(true);
       searchWrap.add(search);
 
@@ -170,22 +144,52 @@ public abstract class SearchPanel<T extends Serializable> extends Panel {
           return SearchPanel.this.getDefaultModelObject() != null;
         }
       };
+
+      add(new IndicatingAjaxButton("searchButton") {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        protected void onSubmit(final AjaxRequestTarget target,
+            final Form<?> form) {
+          final String search = (String) getDefaultModelObject();
+          if (search != null) {
+            final CriteriaDefinition<T> cd = criteriaDefinition;
+            final CriteriaBuilder cb = cd.getCriteriaBuilder();
+            final Root<T> root = cd.getRoot();
+            for (final String prop : searchProperties) {
+              final Predicate p =
+                cb.like(cb.lower(propertyStringExpressionToPath(root, prop)),
+                    getSearch());
+              cd.addPredicate(p);
+            }
+          }
+          SearchPanel.this.onUpdate(target);
+        }
+      });
+
       clearLink.setOutputMarkupId(true);
       clearLink.add(new Image("clear", new ResourceReference(this.getClass(),
       "clear.png")));
       clearWrap.add(clearLink);
 
-      // triggered when user pauses or tabs out
-      search.add(new AjaxOnKeyPausedUpdater() {
-        /** */
-        private static final long serialVersionUID = 1L;
+      if (ajaxOnKeyPausedUpdater) {
+        // triggered when user pauses or tabs out
+        search.add(new AjaxOnKeyPausedUpdater() {
+          /** */
+          private static final long serialVersionUID = 1L;
 
-        @Override
-        protected void onUpdate(final AjaxRequestTarget target) {
-          target.addComponent(clearWrap);
-          SearchPanel.this.onUpdate(target);
-        }
-      });
+          @Override
+          protected void onUpdate(final AjaxRequestTarget target) {
+            target.addComponent(clearWrap);
+            SearchPanel.this.onUpdate(target);
+          }
+        });
+      }
     }
+  }
+
+  @SuppressWarnings("unchecked")
+  public IModel<String> getModel() {
+    return (IModel<String>) getDefaultModel();
   }
 }

@@ -14,6 +14,8 @@ package net.databinder.models.jpa;
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+import net.databinder.util.CriteriaDefinition;
+
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.ISortState;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.ISortStateLocator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.ISortableDataProvider;
@@ -23,8 +25,8 @@ import org.apache.wicket.extensions.markup.html.repeater.util.SingleSortState;
  * <h1>SortableJPAProvider</h1> <i>Copyright (C) 2008 The Scripps Research
  * Institute</i>
  * <p>
- * A JPAProvider extension that implements ISortableDataProvider so it can
- * be used with a DefaultDataTable or an AjaxFallbackDefaultDataTable The
+ * A JPAProvider extension that implements ISortableDataProvider so it can be
+ * used with a DefaultDataTable or an AjaxFallbackDefaultDataTable The
  * CriteriaBuilder that handles the sorting should also implement
  * ISortStateLocator (such as CriteriaSorter).
  * </p>
@@ -41,20 +43,34 @@ ISortableDataProvider<T> {
 
   private ISortState sortState;
 
-  public SortableJPAProvider(final Class<T> objectClass,
+  /**
+   * @param criteriaDefinition
+   * @param predicateBuilder
+   * @param predicateSortBuilder
+   * @param sortableProperty
+   */
+  public SortableJPAProvider(final CriteriaDefinition<T> criteriaDefinition,
       final PredicateBuilder<T> predicateBuilder,
       final PredicateBuilder<T> predicateSortBuilder,
       final String sortableProperty) {
-    super(objectClass, predicateBuilder, predicateSortBuilder, sortableProperty);
+    super(criteriaDefinition, predicateBuilder, predicateSortBuilder,
+        sortableProperty);
+
     if (predicateSortBuilder instanceof ISortStateLocator) {
       sortStateLocator = (ISortStateLocator) predicateSortBuilder;
     }
     initSort();
   }
 
-  public SortableJPAProvider(final Class<T> objectClass,
-      final OrderingPredicateBuilder criteriaBuilder) {
-    super(objectClass, criteriaBuilder);
+  /**
+   * @param criteriaDefinition
+   * @param criteriaBuilder
+   * @param criteriaDefinition CriteriaDefinition
+   */
+  public SortableJPAProvider(final CriteriaDefinition<T> criteriaDefinition,
+      final OrderingPredicateBuilder<T> criteriaBuilder) {
+    super(criteriaDefinition, criteriaBuilder);
+
     if (criteriaBuilder instanceof ISortStateLocator) {
       sortStateLocator = (ISortStateLocator) criteriaBuilder;
     }
@@ -62,9 +78,14 @@ ISortableDataProvider<T> {
 
   }
 
-  public SortableJPAProvider(final Class<T> objectClass,
+  /**
+   * @param criteriaDefinition
+   * @param criteriaBuilder
+   * @param orderProperty
+   */
+  public SortableJPAProvider(final CriteriaDefinition<T> criteriaDefinition,
       final PredicateBuildAndSort<T> criteriaBuilder, final String orderProperty) {
-    super(objectClass, criteriaBuilder, orderProperty);
+    super(criteriaDefinition, criteriaBuilder, orderProperty);
     initSort();
 
   }
@@ -80,7 +101,7 @@ ISortableDataProvider<T> {
     if (sortStateLocator != null) {
       sortStateLocator.setSortState(state);
     } else {
-      this.sortState = state;
+      sortState = state;
     }
   }
 

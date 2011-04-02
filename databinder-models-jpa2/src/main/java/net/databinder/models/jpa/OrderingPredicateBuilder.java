@@ -8,8 +8,8 @@ import javax.persistence.criteria.Predicate;
 import net.databinder.util.CriteriaDefinition;
 
 /**
- * Builds criteria objects with or without order. Only one of the build methods
- * should be called in building a criteria object.
+ * Builds predicate objects with or without order. Only one of the build methods
+ * should be called in building a predicate object.
  */
 public interface OrderingPredicateBuilder<T> extends Serializable {
 

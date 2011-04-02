@@ -6,8 +6,9 @@ import org.apache.wicket.Component;
 import org.apache.wicket.PageParameters;
 
 /**
- * Sign in and registration page.
- * Replaceable String resources: <pre>
+ * Sign in and registration page. Replaceable String resources:
+ * 
+ * <pre>
  * data.auth.title.sign_in
  * data.auth.pre_register_link
  * data.auth.register_link
@@ -16,17 +17,21 @@ import org.apache.wicket.PageParameters;
  * or a subclass of this panel.
  */
 public class DataSignInPage extends DataSignInPageBase {
-	public DataSignInPage(ReturnPage returnPage) {
-		super(returnPage);
-	}
-	public DataSignInPage(PageParameters params) {
-		super(params);
-	}
-	public DataSignInPage(PageParameters params, ReturnPage returnPage) {
-		super(params, returnPage);
-	}
-	@Override
-	protected Component profileSocket(String id, ReturnPage returnPage) {
-		return new DataProfilePanel(id, returnPage);
-	}
+
+  public DataSignInPage(final ReturnPage returnPage) {
+    super(returnPage);
+  }
+
+  public DataSignInPage(final PageParameters params) {
+    super(params);
+  }
+
+  public DataSignInPage(final PageParameters params, final ReturnPage returnPage) {
+    super(params, returnPage);
+  }
+
+  @Override
+  protected Component profileSocket(final String id, final ReturnPage returnPage) {
+    return new DataProfilePanel(id, returnPage);
+  }
 }

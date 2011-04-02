@@ -10,7 +10,7 @@ import org.apache.wicket.util.lang.PropertyResolver;
  */
 public abstract class AbstractPropertyQueryBinder implements QueryBinder {
 
-  private static final long serialVersionUID = 145077736634107819L;
+  private static final long serialVersionUID = 1L;
 
   /**
    * @param query The query to bind

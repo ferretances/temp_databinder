@@ -19,36 +19,41 @@ import org.apache.wicket.util.crypt.Base64;
  */
 @Embeddable
 public class BasicPassword implements DataPassword, Serializable {
-	private String passwordHash;
-	
-	public BasicPassword() { }
-	
-	public BasicPassword(String password) {
-		change(password);
-	}
-	
-	public void change(String password) {
-		MessageDigest md = ((AuthApplication)Application.get()).getDigest();
-		byte[] hash = md.digest(password.getBytes());
-		passwordHash = new String(Base64.encodeBase64(hash));
-	}
-	
-	public void update(MessageDigest md) {
-		md.update(passwordHash.getBytes());
-	}
-	
-	@Column(length = 28, nullable = false)
-	private String getPasswordHash() {
-		return passwordHash;
-	}
 
-	@SuppressWarnings("unused")
-	private void setPasswordHash(String passwordHash) {
-		this.passwordHash = passwordHash;
-	}
-	
-	public boolean matches(String password) {
-		return passwordHash != null &&
-			passwordHash.equals(new BasicPassword(password).getPasswordHash());
-	}
+  private static final long serialVersionUID = 1L;
+
+  private String passwordHash;
+
+  public BasicPassword() {
+  }
+
+  public BasicPassword(final String password) {
+    change(password);
+  }
+
+  public void change(final String password) {
+    final MessageDigest md = ((AuthApplication) Application.get()).getDigest();
+    final byte[] hash = md.digest(password.getBytes());
+    passwordHash = new String(Base64.encodeBase64(hash));
+  }
+
+  public void update(final MessageDigest md) {
+    md.update(passwordHash.getBytes());
+  }
+
+  @Column(length = 28, nullable = false)
+  private String getPasswordHash() {
+    return passwordHash;
+  }
+
+  @SuppressWarnings("unused")
+  private void setPasswordHash(final String passwordHash) {
+    this.passwordHash = passwordHash;
+  }
+
+  public boolean matches(final String password) {
+    return passwordHash != null
+    && passwordHash
+    .equals(new BasicPassword(password).getPasswordHash());
+  }
 }

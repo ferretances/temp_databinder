@@ -21,7 +21,12 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 /**
- * CriteriaDefinition is responsible of building a jpa2 needs.
+ * CriteriaDefinition is responsible of building a jpa2 basic configuration as:
+ * <ul>
+ *  <li> Root
+ *  <li> CriteriaQuery
+ *  <li> CriteriaBuilder
+ * 
  * @author fbencosme@kitsd.com
  * @param <T> entity.
  */
@@ -37,14 +42,14 @@ public class CriteriaDefinition<T> implements Serializable {
 
   private final Class<T> entityClass;
 
-  private final EntityManager em;
+  private final EntityManager entityManager;
 
   private List<Predicate> predicates = new ArrayList<Predicate>();
 
   public CriteriaDefinition(final Class<T> entityClass,
       final EntityManager entityManager) {
     this.entityClass = entityClass;
-    this.em = entityManager;
+    this.entityManager = entityManager;
     criteriaBuilder = entityManager.getCriteriaBuilder();
     criteriaQuery = criteriaBuilder.createQuery();
     root = criteriaQuery.from(entityClass);
@@ -67,7 +72,7 @@ public class CriteriaDefinition<T> implements Serializable {
   }
 
   public EntityManager getEntityManager() {
-    return em;
+    return entityManager;
   }
 
   public CriteriaDefinition<T> setPredicates(final List<Predicate> predicates) {
@@ -98,7 +103,7 @@ public class CriteriaDefinition<T> implements Serializable {
 
   @SuppressWarnings("unchecked")
   public TypedQuery<T> getTypeQuery () {
-    return (TypedQuery<T>) em.createQuery(criteriaQuery);
+    return (TypedQuery<T>) entityManager.createQuery(criteriaQuery);
   }
 
 }

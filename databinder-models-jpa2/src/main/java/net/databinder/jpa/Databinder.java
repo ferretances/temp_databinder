@@ -22,11 +22,11 @@ import org.apache.wicket.RequestCycle;
 import org.apache.wicket.WicketRuntimeException;
 
 /**
- * Provides access to application-bound Hibernate session factories and current
- * sessions. This class will work with a ManagedEntityManagerContext and
- * DataRequestCycle listener when present, but neither is required so long as a
- * "current" session is available from the session factory supplied by the
- * application.
+ * Provides access to application-bound {@link EntityManagerFactory} current
+ * {@link EntityManager}. This class will work with a
+ * ManagedEntityManagerContext and DataRequestCycle listener when present, but
+ * neither is required so long as a "current" {@link EntityManager} is available
+ * from the {@link EntityManagerFactory} supplied by the application.
  * @see JPAApplication
  * @author Nathan Hamblen
  * @author fbencosme@kitsd.com
@@ -39,8 +39,10 @@ public class Databinder {
   public static final String DEFAULT_PERSISTENCE_UNIT_NAME = "persistenceUnit";
 
   /**
-   * @return default session factory, as returned by the application
-   * @throws WicketRuntimeException if session factory can not be found
+   * @return default {@link EntityManagerFactory}, as returned by the
+   *         application
+   * @throws WicketRuntimeException if {@link EntityManagerFactory} can not be
+   *           found
    * @see JPAApplication
    */
   public static EntityManagerFactory getEntityManagerFactory() {
@@ -49,8 +51,9 @@ public class Databinder {
 
   /**
    * @param key object, or null for the default factory
-   * @return entity manager factory, as returned by the application
-   * @throws WicketRuntimeException if session factory can not be found
+   * @return {@link EntityManagerFactory}, as returned by the application
+   * @throws WicketRuntimeException if {@link EntityManagerFactory} can not be
+   *           found
    * @see JPAApplication
    */
   public static EntityManagerFactory getEntityManagerFactory(final String key) {
@@ -72,7 +75,7 @@ public class Databinder {
       .getEntityManager(DEFAULT_PERSISTENCE_UNIT_NAME);
     }
     throw new WicketRuntimeException(
-    "Please implement JPAApplication in your Application subclass.");
+        "Please implement JPAApplication in your Application subclass.");
   }
 
   /**
@@ -93,7 +96,7 @@ public class Databinder {
 
   /**
    * @param persistenceUnit or null for the default factory
-   * @return true if a session is bound for the keyed factory
+   * @return true if a {@link EntityManager} is bound for the keyed factory
    */
   public static boolean hasEntityManagerBound(final String persistenceUnit) {
     return ManagedEntityManagerContext
@@ -101,9 +104,9 @@ public class Databinder {
   }
 
   /**
-   * Notifies current request cycle that a data session was requested, if a
-   * entity manager was not already bound for this thread and the request cycle
-   * is an DataRequestCycle.
+   * Notifies current request cycle that a data {@link EntityManager} was
+   * requested, if a entity manager was not already bound for this thread and
+   * the request cycle is an DataRequestCycle.
    * @param persistenceUnitName or null for the default factory
    * @see JPARequestCycle
    */
@@ -121,16 +124,17 @@ public class Databinder {
   }
 
   /**
-   * Wraps SessionUnit callback in a temporary thread-bound Hibernate session
-   * from the default factory if necessary. This is to be used outside of a
-   * regular a session-handling request cycle, such as during application init
-   * or an external Web service request. The temporary session and transaction,
-   * if created, are closed after the callback returns and uncommited
-   * transactions are rolled back. Be careful of returning detached Hibernate
-   * objects that may not be fully loaded with data; consider using projections
-   * / scalar queries instead.<b>Note</b> This method uses a
-   * ManagedSessionContext. With JTA or other forms of current session lookup a
-   * wrapping session will not be detected and a new one will always be created.
+   * Wraps EntityManagerUnit callback in a temporary thread-bound
+   * {@link EntityManager} from the default factory if necessary. This is to be
+   * used outside of a regular a {@link EntityManager}-handling request cycle,
+   * such as during application init or an external Web service request. The
+   * temporary session and transaction, if created, are closed after the
+   * callback returns and uncommited transactions are rolled back. Be careful of
+   * returning detached JPA objects that may not be fully loaded with data;
+   * consider using projections / scalar queries instead.<b>Note</b> This method
+   * uses a ManagedEntityManagerContext. With JTA or other forms of current
+   * {@link EntityManager} lookup a wrapping {@link EntityManager} will not be
+   * detected and a new one will always be created.
    * @param unit work to be performed in thread-bound session
    * @see EntityManagerUnit
    */
@@ -139,17 +143,18 @@ public class Databinder {
   }
 
   /**
-   * Wraps SessionUnit callback in a temporary thread-bound Hibernate session
-   * from the keyed factory if necessary. This is to be used outside of a
-   * regular a session-handling request cycle, such as during application init
-   * or an external Web service request. The temporary session and transaction,
-   * if created, are closed after the callback returns and uncommited
-   * transactions are rolled back. Be careful of returning detached Hibernate
-   * objects that may not be fully loaded with data; consider using projections
-   * / scalar queries instead. <b>Note</b> This method uses a
-   * ManagedSessionContext. With JTA or other forms of current session lookup a
-   * wrapping session will not be detected and a new one will always be created.
-   * @param unit work to be performed in thread-bound session
+   * Wraps EntityManagerUnit callback in a temporary thread-bound JPA
+   * {@link EntityManager} from the keyed factory if necessary. This is to be
+   * used outside of a regular a {@link EntityManager}-handling request cycle,
+   * such as during application init or an external Web service request. The
+   * temporary session and transaction, if created, are closed after the
+   * callback returns and uncommited transactions are rolled back. Be careful of
+   * returning detached JPA 0 * objects that may not be fully loaded with data;
+   * consider using projections / scalar queries instead. <b>Note</b> This
+   * method uses a ManagedEntityManagerContext. With JTA or other forms of
+   * current {@link EntityManager} lookup a wrapping {@link EntityManager} will
+   * not be detected and a new one will always be created.
+   * @param unit work to be performed in thread-bound {@link EntityManager}
    * @param key or null for the default factory
    * @see EntityManagerUnit
    */

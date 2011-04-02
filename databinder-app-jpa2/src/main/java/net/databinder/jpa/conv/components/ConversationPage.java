@@ -1,6 +1,5 @@
 package net.databinder.jpa.conv.components;
 
-
 import java.util.HashMap;
 
 import javax.persistence.EntityManager;

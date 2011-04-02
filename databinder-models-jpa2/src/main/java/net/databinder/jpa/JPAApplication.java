@@ -19,7 +19,7 @@ public interface JPAApplication {
    * @param persistenceUnitName or null for the default factory
    * @return configured {@link EntityManagerFactory} session factory
    */
-  EntityManagerFactory getEntityManagerFactory(String persistenceUnitName);
+  EntityManagerFactory getEntityManagerFactory(final String persistenceUnitName);
 
-  EntityManager getEntityManager(String persistenceUnitName);
+  EntityManager getEntityManager(final String persistenceUnitName);
 }
