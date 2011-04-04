@@ -55,7 +55,7 @@ public class DataFormBase<T> extends Form<T> {
     try {
       if (!hasError()) {
         final EntityManager em = Databinder.getEntityManager(factoryKey);
-        em.flush(); // needed for conv. sessions, harmless otherwise
+        em.flush(); // needed for conv. EntityManagers, harmless otherwise
         onBeforeCommit();
         em.getTransaction().commit();
         em.getTransaction().begin();

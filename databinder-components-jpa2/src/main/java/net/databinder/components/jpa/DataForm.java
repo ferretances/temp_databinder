@@ -90,7 +90,7 @@ public class DataForm<T> extends DataFormBase<T> {
   }
 
   /**
-   * @param key for the JPA session factory to be used with this component
+   * @param key for the JPA EntityManager factory to be used with this component
    * @return this
    */
   @Override
@@ -186,7 +186,7 @@ public class DataForm<T> extends DataFormBase<T> {
   protected boolean commitFormIfValid() {
     if (!hasError()) {
       savePersistentObjectIfNew();
-      commitTransactionIfValid(); // flush and commit session
+      commitTransactionIfValid(); // flush and commit EntityManager
       // if version is present it should have changed
       if (version != null) {
         updateVersion();
@@ -198,7 +198,7 @@ public class DataForm<T> extends DataFormBase<T> {
 
   /**
    * Saves persistent model object if it is not already contained in the
-   * session. If the a sub-class is responsible for more than one
+   * EntityManager. If the a sub-class is responsible for more than one
    * {@link JPAObjectModel}, it may override to call
    * {@link #saveIfNew(JPAObjectModel)} on each.
    * @return true if object was newly saved
@@ -208,7 +208,7 @@ public class DataForm<T> extends DataFormBase<T> {
   }
 
   /**
-   * Saves model's entity if it is not already contained in the session.
+   * Saves model's entity if it is not already contained in the EntityManager.
    * @return true if object was newly saved
    */
   protected boolean saveIfNew(final JPAObjectModel<T> model) {

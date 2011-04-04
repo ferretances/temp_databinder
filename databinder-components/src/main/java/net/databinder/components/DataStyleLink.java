@@ -1,7 +1,7 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
- 
+
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -24,8 +24,8 @@ package net.databinder.components;
  * @author Nathan Hamblen
  */
 public class DataStyleLink extends StyleLink {
-	
-	public DataStyleLink(String id) {
-		super(id, DataStyleLink.class, "DataStyleSheet.css");
-	}
+
+  public DataStyleLink(final String id) {
+    super(id, DataStyleLink.class, "DataStyleSheet.css");
+  }
 }

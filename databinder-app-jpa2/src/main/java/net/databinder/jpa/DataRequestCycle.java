@@ -25,7 +25,6 @@ import javax.persistence.EntityManagerFactory;
 
 import net.databinder.CookieRequestCycle;
 
-import org.apache.wicket.Application;
 import org.apache.wicket.Page;
 import org.apache.wicket.Response;
 import org.apache.wicket.protocol.http.WebApplication;
@@ -36,8 +35,8 @@ import org.slf4j.LoggerFactory;
 /**
  * <p>
  * Opens JPA em and transactions as required and closes them at a request's end.
- * Uncomitted transactions are rolled back. Uses keyed JPA session factories
- * from Databinder service.
+ * Uncomitted transactions are rolled back. Uses keyed JPA entity manager
+ * factories from Databinder service.
  * </p>
  * @see Databinder
  * @author Nathan Hamblen
@@ -45,7 +44,7 @@ import org.slf4j.LoggerFactory;
 public class DataRequestCycle extends CookieRequestCycle implements
 JPARequestCycle {
 
-  /** Keys for session factories that have been opened for this request */
+  /** Keys for entity manager factories that have been opened for this request */
   protected HashSet<String> keys = new HashSet<String>();
 
   private static final Logger log = LoggerFactory
@@ -56,7 +55,7 @@ JPARequestCycle {
     super(application, request, response);
   }
 
-  /** Roll back active transactions and close session. */
+  /** Roll back active transactions and close entity manager. */
   protected void closeEntityManager(final String key) {
     final EntityManager em = Databinder.getEntityManager(key);
 
@@ -81,40 +80,40 @@ JPARequestCycle {
   }
 
   /**
-   * Open a session and begin a transaction for the keyed session factory.
+   * Open a entity manager and begin a transaction for the keyed entity manager
+   * factory.
    * @param key object, or null for the default factory
-   * @return newly opened session
+   * @return newly opened entity manager
    */
   protected EntityManager openEntityManager(final String key) {
-    final Application app = Application.get();
-    EntityManager em = null;
-    if (app instanceof JPAApplication) {
-      em = ((JPAApplication) app).getEntityManager(key);
-    }
-    ManagedEntityManagerContext.bind(em);
+    final EntityManagerFactory emf = Databinder.getEntityManagerFactory(key);
+    final EntityManagerContext emc = Databinder.getEntityManagerContext(key);
+    final EntityManager em = emf.createEntityManager();
+    emc.bind(em);
     keys.add(key);
     return em;
   }
 
   /**
-   * Closes all JPA sessions opened for this request. If a transaction has not
-   * been committed, it will be rolled back before closing the session.
+   * Closes all JPA entity managers opened for this request. If a transaction
+   * has not been committed, it will be rolled back before closing the entity
+   * manager.
    * @see net.databinder.components.jpa.DataForm#onSubmit()
    */
   @Override
   protected void onEndRequest() {
     for (final String key : keys) {
-      final EntityManagerFactory emf = Databinder.getEntityManagerFactory(key);
-      if (ManagedEntityManagerContext.hasBind(emf)) {
+      final EntityManagerContext emc = Databinder.getEntityManagerContext(key);
+      if (emc.hasBind()) {
         closeEntityManager(key);
-        ManagedEntityManagerContext.unbind(emf);
+        emc.unbind();
       }
     }
   }
 
   /**
-   * Closes and reopens sessions for this request cycle. Unrelated models may
-   * try to load themselves after this point.
+   * Closes and reopens entity managers for this request cycle. Unrelated models
+   * may try to load themselves after this point.
    */
   @Override
   public Page onRuntimeException(final Page page, final RuntimeException e) {

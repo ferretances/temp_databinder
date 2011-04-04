@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
 
  * This library is free software; you can redistribute it and/or
@@ -26,22 +26,22 @@ import org.apache.wicket.markup.html.list.ListItem;
 
 /** Move the given list item down in its list. */
 public class MoveDownButton extends ListItemButton {
-	public MoveDownButton(String id, ListItem item) {
-		super(id, item, new ResourceReference(MoveDownButton.class, "image/down-arrow.png"));
-	}
-	@Override
-	public void onSubmit() {
-		List list = getListView().getList();
-		int index = item.getIndex();
-		if (index != -1)
-		{
-			getListView().modelChanging();
-			Collections.swap(list, index, index + 1);
-			getListView().modelChanged();
-		}
-	}
-	@Override
-	public boolean isEnabled() {
-		return item.getIndex() < getListView().getList().size() - 1;
-	}
+  public MoveDownButton(final String id, final ListItem item) {
+    super(id, item, new ResourceReference(MoveDownButton.class, "image/down-arrow.png"));
+  }
+  @Override
+  public void onSubmit() {
+    final List list = getListView().getList();
+    final int index = item.getIndex();
+    if (index != -1)
+    {
+      getListView().modelChanging();
+      Collections.swap(list, index, index + 1);
+      getListView().modelChanged();
+    }
+  }
+  @Override
+  public boolean isEnabled() {
+    return item.getIndex() < getListView().getList().size() - 1;
+  }
 }

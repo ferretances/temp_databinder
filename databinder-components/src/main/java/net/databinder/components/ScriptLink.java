@@ -1,7 +1,7 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
- 
+
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -23,26 +23,26 @@ import org.apache.wicket.markup.html.resources.JavaScriptReference;
 
 /**
  * Component for a script (JavaScript) link. The stylesheet is expected to be named
- * &lt;ClassName&gt;.js for the class specified in the constructor and be located in 
+ * &lt;ClassName&gt;.js for the class specified in the constructor and be located in
  * the same package as that class.
  * @author Nathan Hamblen
  */
 public class ScriptLink extends JavaScriptReference {
-	private static String EXT = ".js";
-	
-	/** Builds a ScriptLink based on the given class. */
-	public ScriptLink(String id, Class componentClass) {
-		super(id, componentClass, componentClass.getSimpleName() + EXT);
-	}
-	
-	/**
-	 * Get a [classname].js header contriubtor that can be added to a component without any reference in
-	 * its markup. Useful for subclasses that do not have their own templates.
-	 * @param componentClass javascript file should be in same package and have same base name
-	 * @return contributor to add to component
-	 */
-	public static HeaderContributor headerContributor(Class componentClass) {
-		return HeaderContributor.forJavaScript(
-				componentClass, componentClass.getSimpleName() + EXT);
-	}
+  private static String EXT = ".js";
+
+  /** Builds a ScriptLink based on the given class. */
+  public ScriptLink(final String id, final Class componentClass) {
+    super(id, componentClass, componentClass.getSimpleName() + EXT);
+  }
+
+  /**
+   * Get a [classname].js header contriubtor that can be added to a component without any reference in
+   * its markup. Useful for subclasses that do not have their own templates.
+   * @param componentClass javascript file should be in same package and have same base name
+   * @return contributor to add to component
+   */
+  public static HeaderContributor headerContributor(final Class componentClass) {
+    return HeaderContributor.forJavaScript(
+        componentClass, componentClass.getSimpleName() + EXT);
+  }
 }

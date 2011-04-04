@@ -20,6 +20,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import net.databinder.jpa.Databinder;
+
 /**
  * CriteriaDefinition is responsible of building a jpa2 basic configuration as:
  * <ul>
@@ -42,15 +44,11 @@ public class CriteriaDefinition<T> implements Serializable {
 
   private final Class<T> entityClass;
 
-  private final EntityManager entityManager;
-
   private List<Predicate> predicates = new ArrayList<Predicate>();
 
-  public CriteriaDefinition(final Class<T> entityClass,
-      final EntityManager entityManager) {
+  public CriteriaDefinition(final Class<T> entityClass) {
     this.entityClass = entityClass;
-    this.entityManager = entityManager;
-    criteriaBuilder = entityManager.getCriteriaBuilder();
+    criteriaBuilder = getEntityManager().getCriteriaBuilder();
     criteriaQuery = criteriaBuilder.createQuery();
     root = criteriaQuery.from(entityClass);
   }
@@ -72,7 +70,7 @@ public class CriteriaDefinition<T> implements Serializable {
   }
 
   public EntityManager getEntityManager() {
-    return entityManager;
+    return Databinder.getEntityManager();
   }
 
   public CriteriaDefinition<T> setPredicates(final List<Predicate> predicates) {
@@ -88,8 +86,16 @@ public class CriteriaDefinition<T> implements Serializable {
     predicates.add(predicate);
   }
 
+  public void removePredicate(final Predicate predicate) {
+    predicates.remove(predicate);
+  }
+
   public void addAllPredicates(final List<Predicate> predicates) {
     this.predicates.addAll(predicates);
+  }
+
+  public void cleanLikePredicates() {
+    predicates.clear();
   }
 
   public void perform() {
@@ -97,13 +103,15 @@ public class CriteriaDefinition<T> implements Serializable {
         .toArray(new Predicate[0])));
   }
 
-  public void select() {
-    criteriaQuery.select(root);
+  public CriteriaQuery<Object> selectAll() {
+    criteriaQuery.select(root).distinct(true);
+    return criteriaQuery;
   }
 
   @SuppressWarnings("unchecked")
   public TypedQuery<T> getTypeQuery () {
-    return (TypedQuery<T>) entityManager.createQuery(criteriaQuery);
+    return (TypedQuery<T>) getEntityManager().createQuery(criteriaQuery);
   }
+
 
 }

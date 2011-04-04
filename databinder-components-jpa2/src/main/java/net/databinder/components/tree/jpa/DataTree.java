@@ -24,7 +24,7 @@ import org.apache.wicket.model.Model;
 
 /**
  * An extension of {@link BaseTree} based on node objects being represented by
- * {@link HibernateObjectModel}s. Additionally, it offers some convenience
+ * {@link JPAObjectModel}s. Additionally, it offers some convenience
  * methods.
  * @author Thomas Kappler
  * @param <T> the IDataTreeNode implementation being represented by the tree

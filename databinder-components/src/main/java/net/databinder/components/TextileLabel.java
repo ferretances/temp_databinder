@@ -57,7 +57,6 @@ public class TextileLabel extends Label {
       }
       throw new UnsupportedOperationException("Can only convert Strings to Strings");
     }
-    @Override
     public Object convertToObject(final String value, final Locale locale) {
       return null;
     }

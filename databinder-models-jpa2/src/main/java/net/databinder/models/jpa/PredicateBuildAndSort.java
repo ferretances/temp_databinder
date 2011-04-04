@@ -4,7 +4,7 @@ package net.databinder.models.jpa;
  Copyright 2008 The Scripps Research Institute
  http://www.scripps.edu
 
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

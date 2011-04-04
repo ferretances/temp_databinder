@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate Copyright (C) 2008
+ * Databinder: a simple bridge from Wicket to JPA Copyright (C) 2008
  * Nathan Hamblen nathan@technically.us This library is free software; you can
  * redistribute it and/or modify it under the terms of the GNU Lesser General
  * Public License as published by the Free Software Foundation; either version
@@ -28,16 +28,16 @@ import org.apache.wicket.validation.ValidationError;
 import org.apache.wicket.validation.validator.AbstractValidator;
 
 /**
- * Checks a base model and property name against Hibernate Validator.
+ * Checks a base model and property name against JPA Validator.
  * @author Nathan Hamblen
  * @author Rodolfo Hansen
  * @param <T> Type parameter for the validator.
  */
 public class DatabinderValidator<T> extends AbstractValidator<T> implements
-    IValidatorAddListener {
+IValidatorAddListener {
   private static final long serialVersionUID = 1L;
 
-  /** Hibernate ClassValidator to use. */
+  /** JPA Validator to use. */
   private Validator validator;
 
   /** base model, may be null until first call to onValidate. */
@@ -100,7 +100,7 @@ public class DatabinderValidator<T> extends AbstractValidator<T> implements
   }
 
   /**
-   * Checks the component against Hibernate Validator. If the base model and
+   * Checks the component against JPA Validator. If the base model and
    * property were not supplied in the constructor, they will be determined from
    * the component this validator was added to.
    */
@@ -199,7 +199,7 @@ public class DatabinderValidator<T> extends AbstractValidator<T> implements
     public UnrecognizedModelException(final Component formComponent,
         final IModel<?> model) {
       super("DatabinderValidator doesn't recognize the model " + model
-            + " of component " + formComponent.toString());
+          + " of component " + formComponent.toString());
     }
   }
 }

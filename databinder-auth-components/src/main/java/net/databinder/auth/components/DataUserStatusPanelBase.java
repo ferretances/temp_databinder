@@ -66,7 +66,6 @@ public abstract class DataUserStatusPanelBase<T extends DataUser> extends Panel 
       @Override
       public void onClick() {
         setResponsePage(profilePage(new DataSignInPageBase.ReturnPage() {
-          @Override
           public Page get() {
             return DataUserStatusPanelBase.this.getPage();
           }

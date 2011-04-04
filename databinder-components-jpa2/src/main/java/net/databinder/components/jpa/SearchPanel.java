@@ -48,21 +48,21 @@ public abstract class SearchPanel<T extends Serializable> extends Panel {
    */
   public SearchPanel(final String id,
       final CriteriaDefinition<T> criteriaDefinition,
-      final boolean ajaxOnKeyPausedUpdater, final String... searchProperties) {
+      final boolean ajaxOnKeyPausedUpdater, final String searchProperty) {
     super(id, new Model<String>());
     this.ajaxOnKeyPausedUpdater = ajaxOnKeyPausedUpdater;
     this.criteriaDefinition = criteriaDefinition;
-    add(new SearchForm("searchForm", searchProperties));
+    add(new SearchForm("searchForm", searchProperty));
   }
 
   /** Use the given model (must not be read-only ) for the search string */
   public SearchPanel(final String id, final IModel<String> searchModel,
       final CriteriaDefinition<T> criteriaDefinition,
-      final boolean ajaxOnKeyPausedUpdater, final String... searchPropertiess) {
+      final boolean ajaxOnKeyPausedUpdater, final String searchProperty) {
     super(id, searchModel);
     this.ajaxOnKeyPausedUpdater = ajaxOnKeyPausedUpdater;
     this.criteriaDefinition = criteriaDefinition;
-    add(new SearchForm("searchForm", searchPropertiess));
+    add(new SearchForm("searchForm", searchProperty));
   }
 
   @Override
@@ -113,13 +113,13 @@ public abstract class SearchPanel<T extends Serializable> extends Panel {
     /** */
     private static final long serialVersionUID = 1L;
 
-    public SearchForm(final String id, final String... searchProperties) {
+    public SearchForm(final String id, final String searchProperty) {
       super(id);
 
       final AjaxCell searchWrap = new AjaxCell("searchWrap");
       add(searchWrap);
       search =
-        new TextField<String>("searchInput", SearchPanel.this.getModel());
+        new TextField<String>("searchInput", SearchPanel.this.getSearchModel());
       search.setOutputMarkupId(true);
       searchWrap.add(search);
 
@@ -133,6 +133,8 @@ public abstract class SearchPanel<T extends Serializable> extends Panel {
         @Override
         public void onClick(final AjaxRequestTarget target) {
           resetSearchModelObject();
+          final CriteriaDefinition<T> cd = criteriaDefinition;
+          cd.cleanLikePredicates();
           target.addComponent(searchWrap);
           target.addComponent(clearWrap);
           onUpdate(target);
@@ -151,17 +153,16 @@ public abstract class SearchPanel<T extends Serializable> extends Panel {
         @Override
         protected void onSubmit(final AjaxRequestTarget target,
             final Form<?> form) {
-          final String search = (String) getDefaultModelObject();
+          final CriteriaDefinition<T> cd = criteriaDefinition;
+          cd.cleanLikePredicates();
+          final String search = SearchPanel.this.getSearchModel().getObject();
           if (search != null) {
-            final CriteriaDefinition<T> cd = criteriaDefinition;
             final CriteriaBuilder cb = cd.getCriteriaBuilder();
             final Root<T> root = cd.getRoot();
-            for (final String prop : searchProperties) {
-              final Predicate p =
-                cb.like(cb.lower(propertyStringExpressionToPath(root, prop)),
-                    getSearch());
-              cd.addPredicate(p);
-            }
+            final Predicate p =
+              cb.like(cb.trim(propertyStringExpressionToPath(root, searchProperty)),
+                  getSearch());
+            cd.addPredicate(p);
           }
           SearchPanel.this.onUpdate(target);
         }
@@ -189,7 +190,7 @@ public abstract class SearchPanel<T extends Serializable> extends Panel {
   }
 
   @SuppressWarnings("unchecked")
-  public IModel<String> getModel() {
+  public IModel<String> getSearchModel() {
     return (IModel<String>) getDefaultModel();
   }
 }

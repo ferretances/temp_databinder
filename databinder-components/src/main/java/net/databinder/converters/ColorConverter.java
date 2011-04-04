@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
  *
  * This library is free software; you can redistribute it and/or
@@ -33,22 +33,26 @@ import org.apache.wicket.util.string.Strings;
  */
 public class ColorConverter extends AbstractConverter {
 
-	@Override
-	protected Class<Color> getTargetType() {
-		return Color.class;
-	}
+  @Override
+  protected Class<Color> getTargetType() {
+    return Color.class;
+  }
 
-	public Color convertToObject(String str, Locale loc) {
-		try {
-			if (Strings.isEmpty(str)) return null;
-			return Color.decode(str.toString());
-		} catch (NumberFormatException e) {
-			throw new ConversionException(e);
-		}
-	}
-	@Override
-	public String convertToString(Object o, Locale locale) {
-		if (o == null) return null;
-		return "#" + Integer.toHexString(((Color)o).getRGB()).substring(2);
-	}
+  public Color convertToObject(final String str, final Locale loc) {
+    try {
+      if (Strings.isEmpty(str)) {
+        return null;
+      }
+      return Color.decode(str.toString());
+    } catch (final NumberFormatException e) {
+      throw new ConversionException(e);
+    }
+  }
+  @Override
+  public String convertToString(final Object o, final Locale locale) {
+    if (o == null) {
+      return null;
+    }
+    return "#" + Integer.toHexString(((Color)o).getRGB()).substring(2);
+  }
 }

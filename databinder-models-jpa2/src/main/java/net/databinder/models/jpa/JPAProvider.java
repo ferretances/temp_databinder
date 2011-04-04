@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate Copyright (C) 2006
+ * Databinder: a simple bridge from Wicket to JPA Copyright (C) 2006
  * Nathan Hamblen nathan@technically.us This library is free software; you can
  * redistribute it and/or modify it under the terms of the GNU Lesser General
  * Public License as published by the Free Software Foundation; either version
@@ -30,10 +30,10 @@ import net.databinder.util.CriteriaDefinition;
 import org.apache.wicket.model.IModel;
 
 /**
- * Provides query results to DataView and related components. Like the Hibernate
+ * Provides query results to DataView and related components. Like the JPA
  * model classes, the results of this provider can be altered by query binders
  * and criteria builders. By default this provider wraps items in a compound
- * property model in addition to a Hibernate model. This is convenient for
+ * property model in addition to a JPA model. This is convenient for
  * mapping DataView subcomponents as bean properties (as with PropertyListView).
  * However, <b>DataTable will not work with a compound property model.</b> Call
  * setWrapWithPropertyModel(false) when using with DataTable, DataGridView, or
@@ -73,24 +73,20 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
 
       private CriteriaDefinition<T> criteriaDefinition;
 
-      @Override
       public void buildUnordered(final List<Predicate> predicates) {
         predicateOrderingBuilder.buildUnordered(predicates);
       }
 
-      @Override
       public void buildOrdered(final List<Predicate> criteria) {
         predicateOrderingBuilder.buildOrdered(criteria);
       }
 
-      @Override
       public OrderingPredicateBuilder<T> setCriteriaDefinition(
           final CriteriaDefinition<T> criteriaDefinition) {
         this.criteriaDefinition = criteriaDefinition;
         return this;
       }
 
-      @Override
       public CriteriaDefinition<T> getCriteriaDefinition() {
         return criteriaDefinition;
       }
@@ -114,28 +110,25 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
       private static final long serialVersionUID = 1L;
       private CriteriaDefinition<T> criteriaDefinition;
 
-      @Override
+
       public void buildOrdered(final List<Predicate> criteria) {
         criteriaDefinition.getCriteriaQuery().orderBy(
             criteriaDefinition.getCriteriaBuilder().asc(
                 criteriaDefinition.getRoot().get(orderProperty)));
       }
 
-      @Override
       public void buildUnordered(final List<Predicate> criteria) {
         criteriaDefinition.getCriteriaQuery().orderBy(
             criteriaDefinition.getCriteriaBuilder().asc(
                 criteriaDefinition.getRoot().get(orderProperty)));
       }
 
-      @Override
       public OrderingPredicateBuilder<T> setCriteriaDefinition(
           final CriteriaDefinition<T> criteriaDefinition) {
         this.criteriaDefinition = criteriaDefinition;
         return this;
       }
 
-      @Override
       public CriteriaDefinition<T> getCriteriaDefinition() {
         return criteriaDefinition;
       }
@@ -163,24 +156,20 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
 
       private CriteriaDefinition<T> criteriaDefinition;
 
-      @Override
       public void buildUnordered(final List<Predicate> criteria) {
         criteriaBuilder.build(criteria);
       }
 
-      @Override
       public void buildOrdered(final List<Predicate> criteria) {
         criteriaBuilder.build(criteria);
       }
 
-      @Override
       public OrderingPredicateBuilder<T> setCriteriaDefinition(
           final CriteriaDefinition<T> criteriaDefinition) {
         this.criteriaDefinition = criteriaDefinition;
         return this;
       }
 
-      @Override
       public CriteriaDefinition<T> getCriteriaDefinition() {
         return criteriaDefinition;
       }
@@ -188,14 +177,14 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
     });
   }
 
-  /** @return session factory key, or null for the default factory */
+  /** @return EntityManager factory key, or null for the default factory */
   public String getFactoryKey() {
     return factoryKey;
   }
 
   /**
    * Set a factory key other than the default (null).
-   * @param key session factory key
+   * @param key EntityManager factory key
    * @return this, for chaining
    */
   public JPAProvider<T> setFactoryKey(final String key) {
@@ -207,12 +196,12 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
    * It should not normally be necessary to override (or call) this default
    * implementation.
    */
-  @Override
+
   @SuppressWarnings("unchecked")
   public Iterator<T> iterator(final int first, final int count) {
     final CriteriaDefinition<T> cq = getCriteriaDefinition();
     if (queryBuilder != null) {
-      cq.select();
+      cq.selectAll();
       final Query q = queryBuilder.build(cq.getEntityManager());
       q.setFirstResult(first);
       q.setMaxResults(count);
@@ -226,7 +215,7 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
     if (queryBuilder != null) {
       queryBuilder.build(cq.getEntityManager());
     }
-    cq.select();
+    cq.selectAll();
     cq.perform();
 
     final TypedQuery<T> query = cq.getTypeQuery();
@@ -239,7 +228,6 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
    * Only override this method if a single count query or criteria projection is
    * not possible.
    */
-  @Override
   public int size() {
     final EntityManager em = criteriaDefinition.getEntityManager();
     final CriteriaBuilder cb = em.getCriteriaBuilder();
@@ -266,6 +254,7 @@ public class JPAProvider<T> extends PropertyDataProvider<T> {
   }
 
   /** does nothing */
+
   @Override
   public void detach() {
   }

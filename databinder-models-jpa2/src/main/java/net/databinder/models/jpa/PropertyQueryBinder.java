@@ -27,7 +27,7 @@ public class PropertyQueryBinder extends AbstractPropertyQueryBinder {
   /**
    * @param query The query to bind
    */
-  @Override
+
   public void bind(final Query query) {
     bind(query, object, properties);
   }

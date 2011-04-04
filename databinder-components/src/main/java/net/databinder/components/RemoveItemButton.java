@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
 
  * This library is free software; you can redistribute it and/or
@@ -24,18 +24,18 @@ import org.apache.wicket.markup.html.list.ListItem;
 
 /** Removes the given item from its list. */
 public class RemoveItemButton extends ListItemButton {
-	public RemoveItemButton(String id, ListItem item) {
-		super(id, item, getTrashImage());
-	}
-	@Override
-	public void onSubmit() {
-		List list = getListView().getList();
-		int index = item.getIndex();
-		if (index != -1)
-		{
-			getListView().modelChanging();
-			list.remove(index);
-			getListView().modelChanged();
-		}
-	}
+  public RemoveItemButton(final String id, final ListItem item) {
+    super(id, item, getTrashImage());
+  }
+  @Override
+  public void onSubmit() {
+    final List list = getListView().getList();
+    final int index = item.getIndex();
+    if (index != -1)
+    {
+      getListView().modelChanging();
+      list.remove(index);
+      getListView().modelChanged();
+    }
+  }
 }

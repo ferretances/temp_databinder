@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
 
  * This library is free software; you can redistribute it and/or
@@ -26,16 +26,16 @@ import org.apache.wicket.model.IModel;
  */
 @Deprecated
 public class Wrapper extends WebMarkupContainer {
-	/** 
-	 * Creates a wrapping component with a markup ID, normally used as an
-	 * ajax target.
-	 * @param id Wicket ID
-	 */
-	public Wrapper(String id) {
-		super(id);
-		setOutputMarkupId(true);
-	}
-	public Wrapper(String id, IModel model) {
-		super(id, model);
-	}
+  /**
+   * Creates a wrapping component with a markup ID, normally used as an
+   * ajax target.
+   * @param id Wicket ID
+   */
+  public Wrapper(final String id) {
+    super(id);
+    setOutputMarkupId(true);
+  }
+  public Wrapper(final String id, final IModel model) {
+    super(id, model);
+  }
 }

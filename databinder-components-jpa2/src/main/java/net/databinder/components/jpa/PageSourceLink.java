@@ -17,7 +17,7 @@ public class PageSourceLink<T> extends BookmarkablePageLink {
   private String idParameter;
 
   /**
-   * Construct a link to a page using the model object's Hibernate identifier
+   * Construct a link to a page using the model object's JPA identifier
    * set to the "id" parameter.
    * @see #setParameters()
    * @param id component id
@@ -30,7 +30,7 @@ public class PageSourceLink<T> extends BookmarkablePageLink {
   }
 
   /**
-   * Construct a link to a page using the model object's Hibernate identifier
+   * Construct a link to a page using the model object's JPA identifier
    * set to the given identifier parameter.
    * @param id component id
    * @param pageClass target page class

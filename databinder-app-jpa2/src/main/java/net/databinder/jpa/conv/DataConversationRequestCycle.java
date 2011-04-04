@@ -1,6 +1,6 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate Copyright (C) 2006
- * Nathan Hamblen nathan@technically.us This library is free software; you can
+ * Databinder: a simple bridge from Wicket to JPA Copyright (C) 2006 Nathan
+ * Hamblen nathan@technically.us This library is free software; you can
  * redistribute it and/or modify it under the terms of the GNU Lesser General
  * Public License as published by the Free Software Foundation; either version
  * 2.1 of the License, or (at your option) any later version. This library is
@@ -24,7 +24,7 @@ import javax.persistence.PersistenceException;
 
 import net.databinder.jpa.DataRequestCycle;
 import net.databinder.jpa.Databinder;
-import net.databinder.jpa.ManagedEntityManagerContext;
+import net.databinder.jpa.EntityManagerContext;
 import net.databinder.jpa.conv.components.IConversationPage;
 
 import org.apache.wicket.Page;
@@ -35,11 +35,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Supports extended JPA sessions for long conversations. This is useful for a
- * page or a series of pages where changes are made to an entity that can not be
- * immediately committed. Using a "conversation" session, JPAObjectModels are
- * used normally, but until the session is flushed the changes are not made to
- * persistent storage.
+ * Supports extended JPA entity managers for long conversations. This is useful
+ * for a page or a series of pages where changes are made to an entity that can
+ * not be immediately committed. Using a "conversation" session, JPAObjectModels
+ * are used normally, but until the session is flushed the changes are not made
+ * to persistent storage.
  * @author Nathan Hamblen
  */
 public class DataConversationRequestCycle extends DataRequestCycle {
@@ -52,17 +52,18 @@ public class DataConversationRequestCycle extends DataRequestCycle {
   }
 
   /**
-   * Does nothing; The session is open or retreived only when the request target
-   * is known.
+   * Does nothing; The EntityManager is open or retreived only when the request
+   * target is known.
    */
   @Override
   protected void onBeginRequest() {
   }
 
   /**
-   * Called by DataStaticService when a session is needed and does not already
-   * exist. Determines current page and retrieves its associated conversation
-   * session if appropriate. Does nothing if current page is not yet available.
+   * Called by DataStaticService when a EntityManager is needed and does not
+   * already exist. Determines current page and retrieves its associated
+   * conversation EntityManager if appropriate. Does nothing if current page is
+   * not yet available.
    * @param key factory key object, or null for the default factory
    */
   public void dataEntityMangerRequested(final String key) {
@@ -85,15 +86,15 @@ public class DataConversationRequestCycle extends DataRequestCycle {
 
     // if continuing a conversation page
     if (page instanceof IConversationPage) {
-      // look for existing session
+      // look for existing EntityManager
       final IConversationPage convPage = (IConversationPage) page;
       EntityManager em = convPage.getConversationEntityManger(key);
 
-      // if usable session exists, try to open txn, bind, and return
+      // if usable EntityManager exists, try to open txn, bind, and return
       if (em != null && em.isOpen()) {
         try {
           em.getTransaction().begin();
-          ManagedEntityManagerContext.bind(em);
+          Databinder.getEntityManagerContext(key).bind(em);
           keys.add(key);
           return;
         } catch (final PersistenceException e) {
@@ -106,7 +107,7 @@ public class DataConversationRequestCycle extends DataRequestCycle {
       ((IConversationPage) page).setConversationEntityManager(key, em);
       return;
     }
-    // start new standard session
+    // start new standard EntityManager
     openEntityManager(key);
   }
 
@@ -117,11 +118,11 @@ public class DataConversationRequestCycle extends DataRequestCycle {
   @Override
   protected void onEndRequest() {
     for (final String key : keys) {
-      if (!ManagedEntityManagerContext.hasBind(Databinder
-          .getEntityManagerFactory())) {
+      final EntityManagerContext emc = Databinder.getEntityManagerContext(key);
+      if (!emc.hasBind()) {
         return;
       }
-      EntityManager em = Databinder.getEntityManager(key);
+      final EntityManager em = emc.currentEntityManager();
       boolean transactionComitted = false;
       if (em.getTransaction().isActive()) {
         em.getTransaction().rollback();
@@ -132,42 +133,40 @@ public class DataConversationRequestCycle extends DataRequestCycle {
       final Page page = getResponsePage();
 
       if (page != null) {
-        // check for current conversational session
+        // check for current conversational EntityManager
         if (page instanceof IConversationPage) {
           final IConversationPage convPage = (IConversationPage) page;
           // close if not dirty contains no changes
           // TODO: if (transactionComitted && !em.Dirty()) {
-          if (transactionComitted) {
-            em.close();
-            em = null;
-          }
+          // em.close();
+          // em = null;
+          // }
           convPage.setConversationEntityManager(key, em);
         } else {
           em.close();
         }
       }
-      ManagedEntityManagerContext.unbind(Databinder.getEntityManager(key)
-          .getEntityManagerFactory());
+      emc.unbind();
     }
   }
 
   /**
-   * Closes and reopens Hibernate session for this Web session. Unrelated models
-   * may try to load themselves after this point.
+   * Closes and reopens JPA entity manager for this Web EntityManager. Unrelated
+   * models may try to load themselves after this point.
    */
   @Override
   public Page onRuntimeException(final Page page, final RuntimeException e) {
     for (final String key : keys) {
-      if (Databinder.hasEntityManagerBound(key)) {
-        final EntityManager sess = Databinder.getEntityManager(key);
+      final EntityManagerContext emc = Databinder.getEntityManagerContext(key);
+      if (emc.hasBind()) {
+        final EntityManager em = emc.currentEntityManager();
         try {
-          if (sess.getTransaction().isActive()) {
-            sess.getTransaction().rollback();
+          if (em.getTransaction().isActive()) {
+            em.getTransaction().rollback();
           }
         } finally {
-          sess.close();
-          ManagedEntityManagerContext.unbind(Databinder.getEntityManager(key)
-              .getEntityManagerFactory());
+          em.close();
+          emc.unbind();
         }
       }
       openEntityManager(key);

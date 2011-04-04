@@ -6,7 +6,7 @@ import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.IHeaderResponse;
 
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
 
  * This library is free software; you can redistribute it and/or
@@ -33,32 +33,32 @@ import org.apache.wicket.markup.html.IHeaderResponse;
  */
 public abstract class AjaxOnKeyPausedUpdater extends AjaxFormComponentUpdatingBehavior {
 
-	private static final ResourceReference JAVASCRIPT = new ResourceReference(
-			AjaxOnKeyPausedUpdater.class, "AjaxOnKeyPausedUpdater.js");
+  private static final ResourceReference JAVASCRIPT = new ResourceReference(
+      AjaxOnKeyPausedUpdater.class, "AjaxOnKeyPausedUpdater.js");
 
-	/**
-	 * Binds to onchange.
-	 */
-	public AjaxOnKeyPausedUpdater() {
-		super("onchange");
-	}
+  /**
+   * Binds to onchange.
+   */
+  public AjaxOnKeyPausedUpdater() {
+    super("onchange");
+  }
 
-	/**
-	 * Adds needed JavaScript to header.
-	 */
-	@Override
-	public void renderHead(IHeaderResponse response) {
-		super.renderHead(response);
-		response.renderJavascriptReference(JAVASCRIPT);
-	}
+  /**
+   * Adds needed JavaScript to header.
+   */
+  @Override
+  public void renderHead(final IHeaderResponse response) {
+    super.renderHead(response);
+    response.renderJavascriptReference(JAVASCRIPT);
+  }
 
-	/**
-	 * Adds JavaScript listeners for onkeyup and onblur.
-	 */
-	@Override
-	protected void onComponentTag(ComponentTag tag) {
-		super.onComponentTag(tag);
-        tag.put("onkeyup", "AjaxOnKeyPausedTimerReset(this);");
-        tag.put("onblur", "AjaxOnKeyPausedTimerCancel();");
-	}
+  /**
+   * Adds JavaScript listeners for onkeyup and onblur.
+   */
+  @Override
+  protected void onComponentTag(final ComponentTag tag) {
+    super.onComponentTag(tag);
+    tag.put("onkeyup", "AjaxOnKeyPausedTimerReset(this);");
+    tag.put("onblur", "AjaxOnKeyPausedTimerCancel();");
+  }
 }

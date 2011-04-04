@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
 
  * This library is free software; you can redistribute it and/or
@@ -29,24 +29,24 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
  * @author Nathan Hamblen
  */
 public class AlternatingClassModifier extends AttributeModifier {
-	/**
-	 * Constructs AttributeModifier for "class" with values "a" or "b".
-	 * @param item Object whose index determines class value.
-	 */
-	public AlternatingClassModifier(final ListItem item) {
-		this(item, "a", "b");
-	}
+  /**
+   * Constructs AttributeModifier for "class" with values "a" or "b".
+   * @param item Object whose index determines class value.
+   */
+  public AlternatingClassModifier(final ListItem item) {
+    this(item, "a", "b");
+  }
 
-	/**
-	 * Constructs AttributeModifier for "class" with the given alternating class values.
-	 * @param item Object whose index determines class value.
-	 */
-	public AlternatingClassModifier(final ListItem item, final String classA, final String classB) {
-		super("class", true, new AbstractReadOnlyModel() {
-			@Override
-			public Object getObject() {
-				return item.getIndex() % 2 == 0 ? classA : classB;
-			}
-		});
-	}
+  /**
+   * Constructs AttributeModifier for "class" with the given alternating class values.
+   * @param item Object whose index determines class value.
+   */
+  public AlternatingClassModifier(final ListItem item, final String classA, final String classB) {
+    super("class", true, new AbstractReadOnlyModel() {
+      @Override
+      public Object getObject() {
+        return item.getIndex() % 2 == 0 ? classA : classB;
+      }
+    });
+  }
 }

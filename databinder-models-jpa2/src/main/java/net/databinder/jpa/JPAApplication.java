@@ -1,6 +1,5 @@
 package net.databinder.jpa;
 
-import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 /**
@@ -16,10 +15,18 @@ public interface JPAApplication {
    * Supply the entity manager factory for the given persistenceUnitName.
    * Applications needing only one entity manager factory may return it without
    * inspecting the key parameter.
-   * @param persistenceUnitName or null for the default factory
-   * @return configured {@link EntityManagerFactory} session factory
+   * @param key or null for the default factory
+   * @return configured {@link EntityManagerFactory}
    */
-  EntityManagerFactory getEntityManagerFactory(final String persistenceUnitName);
+  EntityManagerFactory getEntityManagerFactory(final String key);
 
-  EntityManager getEntityManager(final String persistenceUnitName);
+  /**
+   * Supply the entity manager context for the given persistenceUnitName.
+   * Applications needing only one entity manager context may return it without
+   * inspecting the key parameter.
+   * @param key or null for the default factory
+   * @return the appropriate {@link EntityManagerContext}
+   */
+  EntityManagerContext getEntityManagerContext(final String key);
+
 }

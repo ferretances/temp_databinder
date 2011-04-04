@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2007  Nathan Hamblen nathan@technically.us
  *
  * This library is free software; you can redistribute it and/or
@@ -35,53 +35,55 @@ import org.apache.wicket.util.string.Strings;
  * @author Nathan Hamblen
  */
 public class UriTextField extends TextField<URI> {
-	
-	private String scheme;
-	
-	/** Costructor called by nested subclasses. */
-	private UriTextField(String id, String scheme) {
-		super(id, java.net.URI.class);
-		this.scheme = scheme;
-	}
-	
-	private String defaultValue() { return  scheme + "://"; }
-	
-	/**
-	 * Return default value when null. Note that converter is not called from base if null.
-	 */
-	@Override
-	protected String getModelValue() {
-		String value = super.getModelValue();
-		if (Strings.isEmpty(value))
-			return defaultValue();
-		return value;
-	}
-	
-	/** @return specialized converter that equates a default string value to null */
-	@SuppressWarnings("unchecked")
-	@Override
-	public IConverter getConverter(Class type) {
-		return new URIConverter() {
-			@Override
-			public URI convertToObject(String value, Locale locale) {
-				if (value == null || value.equals(defaultValue()))
-						return null;
-				return super.convertToObject(value, locale);
-			}
-		};
-	}
-	
-	public static class Http extends UriTextField {
-		public Http(String id) {
-			super(id, "http");
-			add(URIValidator.HttpScheme());
-		}
-	}
-	
-	public static class Ftp extends UriTextField {
-		public Ftp(String id) {
-			super(id, "ftp");
-			add(URIValidator.FtpScheme());
-		}
-	}
+
+  private final String scheme;
+
+  /** Costructor called by nested subclasses. */
+  private UriTextField(final String id, final String scheme) {
+    super(id, java.net.URI.class);
+    this.scheme = scheme;
+  }
+
+  private String defaultValue() { return  scheme + "://"; }
+
+  /**
+   * Return default value when null. Note that converter is not called from base if null.
+   */
+  @Override
+  protected String getModelValue() {
+    final String value = super.getModelValue();
+    if (Strings.isEmpty(value)) {
+      return defaultValue();
+    }
+    return value;
+  }
+
+  /** @return specialized converter that equates a default string value to null */
+  @SuppressWarnings("unchecked")
+  @Override
+  public IConverter getConverter(final Class type) {
+    return new URIConverter() {
+      @Override
+      public URI convertToObject(final String value, final Locale locale) {
+        if (value == null || value.equals(defaultValue())) {
+          return null;
+        }
+        return super.convertToObject(value, locale);
+      }
+    };
+  }
+
+  public static class Http extends UriTextField {
+    public Http(final String id) {
+      super(id, "http");
+      add(URIValidator.HttpScheme());
+    }
+  }
+
+  public static class Ftp extends UriTextField {
+    public Ftp(final String id) {
+      super(id, "ftp");
+      add(URIValidator.FtpScheme());
+    }
+  }
 }

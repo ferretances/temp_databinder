@@ -1,8 +1,8 @@
 package net.databinder.models.jpa;
 
 /*
- * Databinder: a simple bridge from Wicket to Hibernate Copyright (C) 2006
- * Nathan Hamblen nathan@technically.us This library is free software; you can
+ * Databinder: a simple bridge from Wicket to JPA Copyright (C) 2006 Nathan
+ * Hamblen nathan@technically.us This library is free software; you can
  * redistribute it and/or modify it under the terms of the GNU Lesser General
  * Public License as published by the Free Software Foundation; either version
  * 2.1 of the License, or (at your option) any later version. This library is
@@ -65,7 +65,8 @@ PredicateBuilder<T> {
     this(null, true, true, entityClass);
   }
 
-  public PredicateSorter(final String defaultProperty, final Class<T> entityClass) {
+  public PredicateSorter(final String defaultProperty,
+      final Class<T> entityClass) {
     this(defaultProperty, true, true, entityClass);
   }
 
@@ -88,17 +89,14 @@ PredicateBuilder<T> {
     setSortState(new SingleSortState());
   }
 
-  @Override
   public ISortState getSortState() {
     return sortState;
   }
 
-  @Override
   public void setSortState(final ISortState state) {
     sortState = (SingleSortState) state;
   }
 
-  @Override
   public void build(final List<Predicate> criteria) {
     final SortParam sort = sortState.getSort();
     String property;
@@ -150,16 +148,13 @@ PredicateBuilder<T> {
     }
   }
 
-  @Override
   public PredicateBuilder<T> setCriteriaDefinition(
       final CriteriaDefinition<T> criteriaDefinition) {
     return this;
   }
 
-  @Override
   public CriteriaDefinition<T> getCriteriaDefinition() {
-    return new CriteriaDefinition<T>(getEntityClass(),
-        Databinder.getEntityManager());
+    return new CriteriaDefinition<T>(getEntityClass());
   }
 
   public Class<T> getEntityClass() {

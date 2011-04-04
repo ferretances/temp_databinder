@@ -36,14 +36,14 @@ import org.apache.wicket.protocol.http.WebRequest;
 public abstract class DataApplication extends DataApplicationBase implements
 JPAApplication {
 
-  /** App-wide session factories */
+  /** App-wide EntityManager factories */
   private final HashMap<Object, EntityManagerFactory> entityManagerFactories =
     new HashMap<Object, EntityManagerFactory>();
 
   /**
-   * Initializes a default JPA session factory and mounts a page for the
+   * Initializes a default JPA EntityManager factory and mounts a page for the
    * data browser. This is called automatically during start-up. Applications
-   * with one session factory will not normally need to override this method;
+   * with one EntityManager factory will not normally need to override this method;
    * see related methods to override specific tasks.
    * @see #buildEntityManagerFactory(Object) aoe
    * @see #mountDataBrowser()
@@ -79,9 +79,9 @@ JPAApplication {
 
   /**
    * @param key object, or null for the default factory
-   * @return the retained session factory
+   * @return the retained EntityManager factory
    */
-  public EntityManagerFactory getJPASessionFactory(final Object key) {
+  public EntityManagerFactory getJPAEntityManagerFactory(final Object key) {
     final EntityManagerFactory sf = entityManagerFactories.get(key);
     if (sf == null) {
       if (key == null) {
@@ -89,7 +89,7 @@ JPAApplication {
             "The default JPA emf has not been "
             + "initialized. This is normally done in DataApplication.init().");
       } else {
-        throw new WicketRuntimeException("Session factory not found for key: "
+        throw new WicketRuntimeException("EntityManager factory not found for key: "
             + key);
       }
     }
@@ -97,10 +97,10 @@ JPAApplication {
   }
 
   /**
-   * @param key object, or null for the default factoryw
-   * @param sf session factory to retain
+   * @param key object, or null for the default factory w
+   * @param sf EntityManager factory to retain
    */
-  protected void setEntityManagerFactoryernateSessionFactory(final Object key,
+  protected void setEntityManagerFactory(final Object key,
       final EntityManagerFactory sf) {
     entityManagerFactories.put(key, sf);
   }
@@ -124,14 +124,14 @@ JPAApplication {
   }
 
   /**
-   * Called by init to create JPA session factory and load a
+   * Called by init to create JPA EntityManager factory and load a
    * configuration. Passes an empty new AnnotationConfiguration to
-   * buildJPASessionFactory(key, config) by default. Override if creating
+   * buildJPAEntityManagerFactory(key, config) by default. Override if creating
    * a configuration externally.
-   * @param key session factory key; the default key is null
+   * @param key EntityManager factory key; the default key is null
    */
   public void buildEntityManagerFactory(final Object key, final EntityManagerFactory em) {
-    setEntityManagerFactoryernateSessionFactory(key, em);
+    setEntityManagerFactory(key, em);
   }
 
   public abstract EntityManagerFactory configureEMF() ;

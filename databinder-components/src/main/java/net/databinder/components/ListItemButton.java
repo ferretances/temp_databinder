@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
 
  * This library is free software; you can redistribute it and/or
@@ -24,12 +24,12 @@ import org.apache.wicket.markup.html.list.ListView;
 
 /** Base class for buttons that act on list items (move, delete). */
 public abstract class ListItemButton extends BaseItemButton {
-	ListItem item;
-	public ListItemButton(String id, ListItem item, ResourceReference image) {
-		super(id, image);
-		this.item = item;
-	}
-	protected ListView getListView() {
-		return (ListView) item.getParent();
-	}
+  ListItem item;
+  public ListItemButton(final String id, final ListItem item, final ResourceReference image) {
+    super(id, image);
+    this.item = item;
+  }
+  protected ListView getListView() {
+    return (ListView) item.getParent();
+  }
 }

@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate Copyright (C) 2006
+ * Databinder: a simple bridge from Wicket to JPA Copyright (C) 2006
  * Nathan Hamblen nathan@technically.us This library is free software; you can
  * redistribute it and/or modify it under the terms of the GNU Lesser General
  * Public License as published by the Free Software Foundation; either version
@@ -26,7 +26,7 @@ import org.apache.wicket.markup.html.pages.AccessDeniedPage;
 import org.apache.wicket.model.LoadableDetachableModel;
 
 /**
- * Page containing a QueryPanel for browsing data and testing Hibernate queries.
+ * Page containing a QueryPanel for browsing data and testing JPA queries.
  * This page is not bookmarkable, so that it will not be inadverdantly available
  * from the classpath. To access the page it must be subclassed or manually
  * linked. DataApplication.BmarkDataBrowser is a subclass that requires that the
@@ -48,8 +48,8 @@ public class DataBrowser<T> extends WebPage {
         @Override
         protected List<T> load() {
           //          //TODO
-          //          return new ArrayList<T>(Databinder.getHibernateSession()
-          //              .getSessionFactory().getAllClassMetadata().keySet());
+          //          return new ArrayList<T>(Databinder.getEntityManager()
+          //              .getEntityManagerFactory().getAllClassMetadata().keySet());
           return null;
         }
       }) {

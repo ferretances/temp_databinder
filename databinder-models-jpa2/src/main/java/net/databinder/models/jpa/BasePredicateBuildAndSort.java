@@ -4,7 +4,7 @@ package net.databinder.models.jpa;
  Copyright 2008 The Scripps Research Institute
  http://www.scripps.edu
 
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -72,7 +72,6 @@ OrderingPredicateBuilder<T>, Serializable, ISortStateLocator {
 
   }
 
-  @Override
   public void buildOrdered(final List<Predicate> predicates) {
     buildUnordered(predicates);
     final String property = defaultSortProperty;
@@ -85,17 +84,14 @@ OrderingPredicateBuilder<T>, Serializable, ISortStateLocator {
     }
   }
 
-  @Override
   public void buildUnordered(final List<Predicate> predicates) {
     aliases.clear();
   }
 
-  @Override
   public ISortState getSortState() {
     return sortState;
   }
 
-  @Override
   public void setSortState(final ISortState state) {
     sortState = state;
   }
@@ -136,14 +132,12 @@ OrderingPredicateBuilder<T>, Serializable, ISortStateLocator {
     return property;
   }
 
-  @Override
   public BasePredicateBuildAndSort<T> setCriteriaDefinition(
       final CriteriaDefinition<T> criteriaDefinition) {
     this.criteriaDefinition = criteriaDefinition;
     return this;
   }
 
-  @Override
   public CriteriaDefinition<T> getCriteriaDefinition() {
     return criteriaDefinition;
   }

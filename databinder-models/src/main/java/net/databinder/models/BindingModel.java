@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
 
  * This library is free software; you can redistribute it and/or
@@ -26,13 +26,13 @@ import org.apache.wicket.model.IModel;
  * @author Nathan Hamblen
  */
 public interface BindingModel<T> extends IModel<T> {
-	/**
-	 * @return true if object is bound to persistent storage
-	 */
-	public boolean isBound();
-	
-	/**
-	 * Discard any attached object and reset to a new unsaved object 
-	 */
-	public void unbind();
+  /**
+   * @return true if object is bound to persistent storage
+   */
+  public boolean isBound();
+
+  /**
+   * Discard any attached object and reset to a new unsaved object
+   */
+  public void unbind();
 }

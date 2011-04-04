@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate Copyright (C) 2006
+ * Databinder: a simple bridge from Wicket to JPA Copyright (C) 2006
  * Nathan Hamblen nathan@technically.us This library is free software; you can
  * redistribute it and/or modify it under the terms of the GNU Lesser General
  * Public License as published by the Free Software Foundation; either version
@@ -65,17 +65,25 @@ public class Databinder {
     "Please implement JPAApplication in your Application subclass.");
   }
 
-  /**
-   * @return default Hibernate session bound to current thread
-   */
-  public static EntityManager getEntityManager() {
+  public static EntityManagerContext getEntityManagerContext() {
+    return getEntityManagerContext(DEFAULT_PERSISTENCE_UNIT_NAME);
+  }
+
+  public static EntityManagerContext getEntityManagerContext(final String key) {
     final Application app = Application.get();
     if (app instanceof JPAApplication) {
-      return ((JPAApplication) app)
-      .getEntityManager(DEFAULT_PERSISTENCE_UNIT_NAME);
+      return ((JPAApplication) app).getEntityManagerContext(key);
     }
     throw new WicketRuntimeException(
-        "Please implement JPAApplication in your Application subclass.");
+    "Please implement JPAApplication in your Application subclass.");
+  }
+
+  /**
+   * @return default JPA {@link EntityManager} bound to current thread
+   */
+  public static EntityManager getEntityManager() {
+    dataEntityManagerRequested(DEFAULT_PERSISTENCE_UNIT_NAME);
+    return getEntityManagerContext().currentEntityManager();
   }
 
   /**
@@ -83,12 +91,12 @@ public class Databinder {
    * @return {@link EntityManager} bound to current thread
    */
   public static EntityManager getEntityManager(final String persistenceUnit) {
-    dataSessionRequested(persistenceUnit);
+    dataEntityManagerRequested(persistenceUnit);
     return getEntityManagerFactory(persistenceUnit).createEntityManager();
   }
 
   /**
-   * @return true if a session is bound for the default factory
+   * @return true if a EntityManager is bound for the default factory
    */
   public static boolean hasBoundEntityManager() {
     return hasEntityManagerBound(DEFAULT_PERSISTENCE_UNIT_NAME);
@@ -99,8 +107,7 @@ public class Databinder {
    * @return true if a {@link EntityManager} is bound for the keyed factory
    */
   public static boolean hasEntityManagerBound(final String persistenceUnit) {
-    return ManagedEntityManagerContext
-    .hasBind(getEntityManagerFactory(persistenceUnit));
+    return getEntityManagerContext(persistenceUnit).hasBind();
   }
 
   /**
@@ -110,7 +117,7 @@ public class Databinder {
    * @param persistenceUnitName or null for the default factory
    * @see JPARequestCycle
    */
-  private static void dataSessionRequested(final String persistenceUnitName) {
+  private static void dataEntityManagerRequested(final String persistenceUnitName) {
     if (!hasEntityManagerBound(persistenceUnitName)) {
       // if entity manager is unavailable, it could be a late-loaded
       // conversational
@@ -128,18 +135,18 @@ public class Databinder {
    * {@link EntityManager} from the default factory if necessary. This is to be
    * used outside of a regular a {@link EntityManager}-handling request cycle,
    * such as during application init or an external Web service request. The
-   * temporary session and transaction, if created, are closed after the
+   * temporary EntityManager and transaction, if created, are closed after the
    * callback returns and uncommited transactions are rolled back. Be careful of
    * returning detached JPA objects that may not be fully loaded with data;
    * consider using projections / scalar queries instead.<b>Note</b> This method
    * uses a ManagedEntityManagerContext. With JTA or other forms of current
    * {@link EntityManager} lookup a wrapping {@link EntityManager} will not be
    * detected and a new one will always be created.
-   * @param unit work to be performed in thread-bound session
+   * @param unit work to be performed in thread-bound EntityManager
    * @see EntityManagerUnit
    */
-  public static Object ensureSession(final EntityManagerUnit unit) {
-    return ensureSession(unit, null);
+  public static Object ensureEntityManager(final EntityManagerUnit unit) {
+    return ensureEntityManager(unit, null);
   }
 
   /**
@@ -147,7 +154,7 @@ public class Databinder {
    * {@link EntityManager} from the keyed factory if necessary. This is to be
    * used outside of a regular a {@link EntityManager}-handling request cycle,
    * such as during application init or an external Web service request. The
-   * temporary session and transaction, if created, are closed after the
+   * temporary EntityManager and transaction, if created, are closed after the
    * callback returns and uncommited transactions are rolled back. Be careful of
    * returning detached JPA 0 * objects that may not be fully loaded with data;
    * consider using projections / scalar queries instead. <b>Note</b> This
@@ -158,17 +165,18 @@ public class Databinder {
    * @param key or null for the default factory
    * @see EntityManagerUnit
    */
-  public static Object ensureSession(final EntityManagerUnit unit,
+  public static Object ensureEntityManager(final EntityManagerUnit unit,
       final String key) {
-    dataSessionRequested(key);
-    final EntityManagerFactory emf = getEntityManagerFactory(key);
-    if (ManagedEntityManagerContext.hasBind(emf)) {
+    dataEntityManagerRequested(key);
+    final EntityManagerContext emc = getEntityManagerContext(key);
+    if (emc.hasBind()) {
       return unit.run(getEntityManager(key));
     }
-    final EntityManager em = emf.createEntityManager();
+
+    final EntityManager em = getEntityManagerFactory(key).createEntityManager();
     try {
       em.getTransaction().begin();
-      ManagedEntityManagerContext.bind(em);
+      emc.bind(em);
       return unit.run(em);
     } finally {
       try {
@@ -177,7 +185,7 @@ public class Databinder {
         }
       } finally {
         em.close();
-        ManagedEntityManagerContext.unbind(emf);
+        emc.unbind();
       }
     }
   }

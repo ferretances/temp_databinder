@@ -24,12 +24,10 @@ implements IDetachable {
     this.properties = properties;
   }
 
-  @Override
   public void detach() {
     model.detach();
   }
 
-  @Override
   public void bind(final Query query) {
     bind(query, model.getObject(), properties);
   }

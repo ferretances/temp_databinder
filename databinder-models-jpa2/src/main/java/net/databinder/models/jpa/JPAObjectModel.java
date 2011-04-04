@@ -61,7 +61,7 @@ BindingModel<T> {
   /**
    * Create a model bound to the given class and entity id. If nothing matches
    * the id the model object will be null.
-   * @param objectClass class to be loaded and stored by Hibernate
+   * @param objectClass class to be loaded and stored by JPA
    * @param entityId id of the persistent object
    */
   public JPAObjectModel(final Class<T> objectClass, final Serializable entityId) {
@@ -71,11 +71,11 @@ BindingModel<T> {
 
   /**
    * Constructor for a model with no existing persistent object. This class
-   * should be Serializable so that the new object can be stored in the session
-   * until it is persisted. If serialization is impossible, call
+   * should be Serializable so that the new object can be stored in the
+   * EntityManager until it is persisted. If serialization is impossible, call
    * setRetainUnsaved(false) and the object will be discarded and recreated with
    * each request.
-   * @param objectClass class to be loaded and stored by Hibernate
+   * @param objectClass class to be loaded and stored by JPA
    */
   public JPAObjectModel(final Class<T> objectClass) {
     this.entityClass = objectClass;
@@ -140,7 +140,7 @@ BindingModel<T> {
 
   /**
    * Set a factory key other than the default (null).
-   * @param key session factory key
+   * @param key EntityManager factory key
    * @return this, for chaining
    */
   public JPAObjectModel<T> setFactoryKey(final String key) {
@@ -156,7 +156,6 @@ BindingModel<T> {
    *          {@link EntityManager}, or Serializable, or null
    */
   @SuppressWarnings("unchecked")
-  @Override
   public void setObject(final T object) {
     unbind(); // clear everything but class, name
     entityClass = null;
@@ -315,10 +314,9 @@ BindingModel<T> {
   /**
    * Disassociates this object from any persistent object, but retains the class
    * for constructing a blank copy if requested.
-   * @see JPAObjectModel#HibernateObjectModel(Class objectClass)
+   * @see JPAObjectModel#JPAObjectModel(Class objectClass)
    * @see #isBound()
    */
-  @Override
   public void unbind() {
     objectId = null;
     queryBuilder = null;
@@ -333,18 +331,17 @@ BindingModel<T> {
    * object at the end of every request cycle and reloads it via Hiberanate when
    * needed again. When unbound, its behavior is dictated by the value of
    * retanUnsaved.
-   * @return true if information needed to load from Hibernate (identifier,
-   *         query, or criteria) is present
+   * @return true if information needed to load from JPA (identifier, query, or
+   *         criteria) is present
    */
-  @Override
   public boolean isBound() {
     return objectId != null || criteriaBuilder != null || queryBuilder != null;
   }
 
   /**
    * When retainUnsaved is true (the default) and the model is not bound, the
-   * model object must be Serializable as it is retained in the Web session
-   * between requests. See isBound() for more information.
+   * model object must be Serializable as it is retained in the Web
+   * EntityManager between requests. See isBound() for more information.
    * @return true if unsaved objects should be retained between requests.
    */
   public boolean getRetainUnsaved() {

@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
  *
  * This library is free software; you can redistribute it and/or
@@ -33,15 +33,15 @@ import org.apache.wicket.util.string.Strings;
  */
 public class URIConverter extends AbstractConverter {
 
-	@Override
-	protected Class<URI> getTargetType() {
-		return URI.class;
-	}
-	public URI convertToObject(String value, Locale locale) {
-		try {
-			return Strings.isEmpty(value) ? null : new URI(value);
-		} catch (URISyntaxException e) {
-			throw new ConversionException(e);
-		}
-	}
+  @Override
+  protected Class<URI> getTargetType() {
+    return URI.class;
+  }
+  public URI convertToObject(final String value, final Locale locale) {
+    try {
+      return Strings.isEmpty(value) ? null : new URI(value);
+    } catch (final URISyntaxException e) {
+      throw new ConversionException(e);
+    }
+  }
 }

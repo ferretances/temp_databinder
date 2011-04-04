@@ -68,7 +68,6 @@ WebSession implements AuthSession<T> {
   /**
    * @return DataUser object for current user, or null if none signed in.
    */
-  @Override
   public T getUser() {
     if (isSignedIn()) {
       return getUserModel().getObject();
@@ -76,7 +75,6 @@ WebSession implements AuthSession<T> {
     return null;
   }
 
-  @Override
   public IModel<T> getUserModel() {
     return userModel;
   }
@@ -98,7 +96,6 @@ WebSession implements AuthSession<T> {
    * Determine if user is signed in, or can be via cookie.
    * @return true if signed in or cookie sign in is possible and successful
    */
-  @Override
   public boolean isSignedIn() {
     if (userModel == null) {
       cookieSignIn();
@@ -109,7 +106,6 @@ WebSession implements AuthSession<T> {
   /**
    * @return true if signed in, false if credentials incorrect
    */
-  @Override
   public boolean signIn(final String username, final String password) {
     return signIn(username, password, false);
   }
@@ -118,7 +114,6 @@ WebSession implements AuthSession<T> {
    * @param setCookie if true, sets cookie to remember user
    * @return true if signed in, false if credentials incorrect
    */
-  @Override
   public boolean signIn(final String username, final String password,
       final boolean setCookie) {
     clearUser();
@@ -137,7 +132,6 @@ WebSession implements AuthSession<T> {
    * @param user validated and persisted user, must be in current JPA session
    * @param setCookie if true, sets cookie to remember user
    */
-  @Override
   public void signIn(final T user, final boolean setCookie) {
     userModel = createUserModel(user);
     if (setCookie) {
@@ -253,7 +247,6 @@ WebSession implements AuthSession<T> {
   }
 
   /** Signs out and invalidates session. */
-  @Override
   public void signOut() {
     clearUser();
     getSessionStore().invalidate(RequestCycle.get().getRequest());

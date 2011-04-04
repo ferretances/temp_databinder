@@ -7,7 +7,7 @@ import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.IHeaderResponse;
 
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
 
  * This library is free software; you can redistribute it and/or
@@ -34,40 +34,40 @@ import org.apache.wicket.markup.html.IHeaderResponse;
  */
 public abstract class AjaxOnKeyPausedSubmitter extends AjaxFormSubmitBehavior {
 
-	private static final ResourceReference JAVASCRIPT = new ResourceReference(
-			AjaxOnKeyPausedSubmitter.class, "AjaxOnKeyPausedUpdater.js");
+  private static final ResourceReference JAVASCRIPT = new ResourceReference(
+      AjaxOnKeyPausedSubmitter.class, "AjaxOnKeyPausedUpdater.js");
 
-	/**
-	 * Binds to onchange.
-	 */
-	public AjaxOnKeyPausedSubmitter() {
-		super("onchange");
-	}
+  /**
+   * Binds to onchange.
+   */
+  public AjaxOnKeyPausedSubmitter() {
+    super("onchange");
+  }
 
-	/**
-	 * Adds needed JavaScript to header.
-	 */
-	@Override
-	public void renderHead(IHeaderResponse response) {
-		super.renderHead(response);
-		response.renderJavascriptReference(JAVASCRIPT);
-	}
+  /**
+   * Adds needed JavaScript to header.
+   */
+  @Override
+  public void renderHead(final IHeaderResponse response) {
+    super.renderHead(response);
+    response.renderJavascriptReference(JAVASCRIPT);
+  }
 
-	/**
-	 * Adds JavaScript listeners for onkeyup and onblur.
-	 */
-	@Override
-	protected void onComponentTag(ComponentTag tag) {
-		super.onComponentTag(tag);
-        tag.put("onkeyup", "AjaxOnKeyPausedTimerReset(this);");
-        tag.put("onblur", "AjaxOnKeyPausedTimerCancel();");
-	}
+  /**
+   * Adds JavaScript listeners for onkeyup and onblur.
+   */
+  @Override
+  protected void onComponentTag(final ComponentTag tag) {
+    super.onComponentTag(tag);
+    tag.put("onkeyup", "AjaxOnKeyPausedTimerReset(this);");
+    tag.put("onblur", "AjaxOnKeyPausedTimerCancel();");
+  }
 
-	/**
-	 * Does nothing; override to respond to errors in the submitted form. (Submit on
-	 * pause is probably not a good match for forms that need validation.)
-	 */
-	@Override
-	protected void onError(AjaxRequestTarget target) {
-	}
+  /**
+   * Does nothing; override to respond to errors in the submitted form. (Submit on
+   * pause is probably not a good match for forms that need validation.)
+   */
+  @Override
+  protected void onError(final AjaxRequestTarget target) {
+  }
 }

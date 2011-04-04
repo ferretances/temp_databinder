@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
 
  * This library is free software; you can redistribute it and/or
@@ -34,26 +34,29 @@ import org.apache.wicket.model.PropertyModel;
  * @author Mark Southern
  */
 public class ObjectFilteredPropertyColumn<T, Y> extends ChoiceFilteredPropertyColumn<T, Y> {
-	private ChoiceRenderer<Y> choiceRenderer;
-	private String displayProperty;
+  private final ChoiceRenderer<Y> choiceRenderer;
+  private final String displayProperty;
 
-	public ObjectFilteredPropertyColumn(IModel<String> displayModel, String sortProperty, String displayProperty, String propertyExpression, String filterLabelProperty, IModel<List<? extends Y>> filterChoices) {
-		super(displayModel,sortProperty,propertyExpression,filterChoices);
-		choiceRenderer = new ChoiceRenderer<Y>(filterLabelProperty);
-		this.displayProperty = displayProperty;
-	}
+  public ObjectFilteredPropertyColumn(final IModel<String> displayModel, final String sortProperty, final String displayProperty, final String propertyExpression, final String filterLabelProperty, final IModel<List<? extends Y>> filterChoices) {
+    super(displayModel,sortProperty,propertyExpression,filterChoices);
+    choiceRenderer = new ChoiceRenderer<Y>(filterLabelProperty);
+    this.displayProperty = displayProperty;
+  }
 
-	protected IChoiceRenderer<Y> getChoiceRenderer() {
-		return choiceRenderer;
-	}
+  @Override
+  protected IChoiceRenderer<Y> getChoiceRenderer() {
+    return choiceRenderer;
+  }
 
-	protected IModel createLabelModel(IModel embeddedModel) {
-		return new PropertyModel(embeddedModel, displayProperty);
-	}
+  @Override
+  protected IModel createLabelModel(final IModel embeddedModel) {
+    return new PropertyModel(embeddedModel, displayProperty);
+  }
 
-	public Component getFilter(String componentId, FilterForm form) {
-		ChoiceFilter cf = (ChoiceFilter) super.getFilter(componentId, form);
-		cf.getChoice().setNullValid(true);
-		return cf;
-	}
+  @Override
+  public Component getFilter(final String componentId, final FilterForm form) {
+    final ChoiceFilter cf = (ChoiceFilter) super.getFilter(componentId, form);
+    cf.getChoice().setNullValid(true);
+    return cf;
+  }
 }

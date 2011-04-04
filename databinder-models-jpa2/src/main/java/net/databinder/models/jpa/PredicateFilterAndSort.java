@@ -4,7 +4,7 @@ package net.databinder.models.jpa;
  Copyright 2008 The Scripps Research Institute
  http://www.scripps.edu
 
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -53,7 +53,7 @@ import org.apache.wicket.util.lang.PropertyResolverConverter;
  * JPAProvider provider = new JPAProvider(Player.class, builder);
  * provider.setWrapWithPropertyModel(false); DataTable table = new
  * DataTable("players", columns, provider, 25) {
- * @Override protected Item newRowItem(String id, int index, IModel model) {
+ *  protected Item newRowItem(String id, int index, IModel model) {
  *           return new OddEvenItem(id, index, model); } };
  *           table.addTopToolbar(new AjaxNavigationToolbar(table));
  *           table.addTopToolbar(new FilterToolbar(table, form, builder));
@@ -80,6 +80,7 @@ implements IFilterStateLocator<T> {
     super(defaultSortProperty, sortAscending, sortCased, criteriaDefinition);
     this.bean = bean;
   }
+
 
   @Override
   public void buildUnordered(final List<Predicate> predicates) {
@@ -163,12 +164,12 @@ implements IFilterStateLocator<T> {
   }
 
   @SuppressWarnings("unchecked")
-  @Override
+
   public T getFilterState() {
     return (T) filterMap;
   }
 
-  @Override
+
   @SuppressWarnings("unchecked")
   public void setFilterState(final Object filterMap) {
     this.filterMap = (Map<String, String>) filterMap;

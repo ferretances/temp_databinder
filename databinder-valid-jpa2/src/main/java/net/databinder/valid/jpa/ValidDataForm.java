@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate Copyright (C) 2008
+ * Databinder: a simple bridge from Wicket to JPA Copyright (C) 2008
  * Nathan Hamblen nathan@technically.us This library is free software; you can
  * redistribute it and/or modify it under the terms of the GNU Lesser General
  * Public License as published by the Free Software Foundation; either version
@@ -41,7 +41,7 @@ import org.apache.wicket.validation.IValidator;
  */
 public class ValidDataForm<T> extends DataForm<T> {
 
-  /** Hibernate Validator to use. */
+  /** JPA Validator to use. */
   private final Validator validator;
 
   /** */
@@ -53,7 +53,7 @@ public class ValidDataForm<T> extends DataForm<T> {
    * and retained between requests until it is persisted.
    * @param id wicket:id
    * @param modelClass for the persistent object
-   * @see HibernateObjectModel#setRetainUnsaved(boolean)
+   * @see JPAObjectModel#setRetainUnsaved(boolean)
    */
   public ValidDataForm(final String id, final Class<T> modelClass) {
     this(id, modelClass, Validation.buildDefaultValidatorFactory().getValidator());
@@ -102,7 +102,7 @@ public class ValidDataForm<T> extends DataForm<T> {
 
   /**
    * Form that is nested below a component with a compound model containing a
-   * Hibernate model.
+   * JPA model.
    * @param id wicket:id
    */
   public ValidDataForm(final String id) {
@@ -112,7 +112,7 @@ public class ValidDataForm<T> extends DataForm<T> {
 
   /**
    * Form that is nested below a component with a compound model containing a
-   * Hibernate model.
+   * JPA model.
    * @param id wicket:id
    * @param validator ClassValidator to use
    */

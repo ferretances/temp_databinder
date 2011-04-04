@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2008  Nathan Hamblen nathan@technically.us
 
  * This library is free software; you can redistribute it and/or
@@ -28,12 +28,12 @@ import org.apache.wicket.model.IModel;
  *
  */
 public class AjaxCell extends WebMarkupContainer {
-	public AjaxCell(String id, IModel model) {
-		super(id, model);
-		setOutputMarkupId(true);
-		setOutputMarkupPlaceholderTag(true);
-	}
-	public AjaxCell(String id) {
-		this(id, null);
-	}
+  public AjaxCell(final String id, final IModel model) {
+    super(id, model);
+    setOutputMarkupId(true);
+    setOutputMarkupPlaceholderTag(true);
+  }
+  public AjaxCell(final String id) {
+    this(id, null);
+  }
 }

@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate Copyright (C) 2007
+ * Databinder: a simple bridge from Wicket to JPA Copyright (C) 2007
  * Nathan Hamblen nathan@technically.us Copyright (C) 2007 xoocode.org project
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 import javax.persistence.QueryTimeoutException;
 import javax.persistence.metamodel.Attribute;
@@ -51,11 +52,10 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.util.string.Strings;
-import org.hibernate.SessionFactory;
 
 /**
- * A Panel used to display a textarea to enter an HQL query and execute it
- * against the current session of a {@link SessionFactory}.
+ * A Panel used to display a textarea to enter an JPAQL query and execute it
+ * against the current entity manager of a {@link EntityManagerFactory}.
  * <p>
  * The panel result is displayed in a data table, where columns are created
  * according to the query.

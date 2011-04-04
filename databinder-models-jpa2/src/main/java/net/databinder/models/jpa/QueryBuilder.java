@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to Hibernate
+ * Databinder: a simple bridge from Wicket to JPA
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
 
  * This library is free software; you can redistribute it and/or
@@ -32,7 +32,7 @@ import javax.persistence.Query;
  */
 public interface QueryBuilder extends Serializable {
   /**
-   * Create query from session and bind it to parameters.
+   * Create query from EntityManager and bind it to parameters.
    * @param entityManager entityManager for the current request cycle
    * @return ready-to-use query
    */

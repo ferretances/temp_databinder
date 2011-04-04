@@ -73,7 +73,7 @@ public class PredicateSearchAndSort<T> extends PredicateBuildAndSort<T> {
         }
       }
       cd.addAllPredicates(predicates);
-      cd.select();
+      cd.selectAll();
       cd.perform();
     }
   }
