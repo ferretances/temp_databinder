@@ -40,14 +40,14 @@
     <module>databinder-components-jpa</module>
     <module>databinder-components-cay</module>
     <module>databinder-auth-components</module>
-    <module>databinder-auth-components-hib</module>
+    <module>databinder-auth-components-jpa</module>
     <module>databinder-app</module>
-    <module>databinder-app-hib</module>
+    <module>databinder-app-jpa</module>
     <module>databinder-app-cay</module>
     <module>databinder-app-cluster</module>
     <module>databinder-dispatch</module>
-    <module>databinder-dispatch-components</module>
-    <module>databinder-valid-hib</module>
+<!--     <module>databinder-dispatch-components</module> -->
+    <module>databinder-valid-jpa</module>
     <module>databinder-draw</module>
   </modules>
   <organization>

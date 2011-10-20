@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+ <modelVersion>4.0.0</modelVersion>
+ 
+ <artifactId>databinder-valid-jpa</artifactId>
+ <name>Databinder validation / Hibernate</name>
+ 
+ <parent>
+  <groupId>net.databinder</groupId>
+  <artifactId>databinder-parent</artifactId>
+  <version>1.5-SNAPSHOT</version>
+ </parent>
+ 
+ <dependencies>
+ <!-- Bean Validation API and RI -->
+    <dependency>
+      <groupId>javax.validation</groupId>
+      <artifactId>validation-api</artifactId>
+      <version>1.0.0.GA</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-validator</artifactId>
+      <version>4.0.2.GA</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <version>1.5.6</version>
+      <scope>runtime</scope>
+    </dependency>
+    <!-- JPA API and RI -->
+ 
+ 
+ 
+  <dependency>
+   <groupId>${pom.groupId}</groupId>
+   <version>${pom.version}</version>
+   <artifactId>databinder-components-jpa</artifactId>
+  </dependency>
+ </dependencies>
+
+ <repositories>
+  <repository>
+   <id>com.jboss</id>
+   <url>http://repository.jboss.com/maven2/</url>
+  </repository>
+ </repositories>
+
+</project>
