@@ -3,11 +3,13 @@
  <modelVersion>4.0.0</modelVersion>
  <artifactId>databinder-components</artifactId>
  <name>Databinder components</name>
+ 
  <parent>
   <groupId>net.databinder</groupId>
   <artifactId>databinder-parent</artifactId>
   <version>1.5-SNAPSHOT</version>
  </parent>
+ 
  <dependencies>
   <dependency>
    <groupId>${pom.groupId}</groupId>

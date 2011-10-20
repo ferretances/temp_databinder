@@ -26,6 +26,7 @@ import net.databinder.components.NullPlug;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.Session;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.border.Border;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.Form;
@@ -47,15 +48,15 @@ import org.apache.wicket.model.ResourceModel;
  * @see AuthSession
  */
 public class DataSignInPanel<T extends DataUser> extends Panel {
-	private ReturnPage returnPage;
-	public DataSignInPanel(String id, ReturnPage returnPage) {
+	private final ReturnPage returnPage;
+	public DataSignInPanel(final String id, final ReturnPage returnPage) {
 		super(id);
 		this.returnPage = returnPage;
 		add(newSignInForm("signInForm"));
 	}
 	
 	/** Override to instantiate a SignInForm subclass. */
-	protected SignInForm newSignInForm(String id) {
+	protected SignInForm newSignInForm(final String id) {
 		return new SignInForm(id);
 	}
 	
@@ -73,7 +74,7 @@ public class DataSignInPanel<T extends DataUser> extends Panel {
 		protected RSAPasswordTextField getPassword() { return password; }
 		protected CheckBox getRememberMe() { return rememberMe; }
 		
-		protected SignInForm(String id) {
+		protected SignInForm(final String id) {
 			super(id);
 			add(highFormSocket("highFormSocket"));
 			add(feedbackBorder("username-border")
@@ -92,32 +93,35 @@ public class DataSignInPanel<T extends DataUser> extends Panel {
 		}
 		@Override
 		protected void onSubmit() {
-			if (getAuthSession().signIn((String)username.getModelObject(), (String)password.getModelObject(), 
-					(Boolean)rememberMe.getModelObject()))
+			if (getAuthSession().signIn(username.getModelObject(), password.getModelObject(), 
+					rememberMe.getModelObject()))
 			{
 				if (returnPage == null) {
-					if (!continueToOriginalDestination())
-						setResponsePage(getApplication().getHomePage());
-				} else
-					setResponsePage(returnPage.get());
-			} else
-				error(getLocalizer().getString("signInFailed", this, "Sorry, these credentials are not recognized."));
+					if (!continueToOriginalDestination()) {
+            setResponsePage(getApplication().getHomePage());
+          }
+				} else {
+          setResponsePage(returnPage.get());
+        }
+			} else {
+        error(getLocalizer().getString("signInFailed", this, "Sorry, these credentials are not recognized."));
+      }
 		}
 	}
 	
 	/** @return border to be added to each form component, base returns FormComponentFeedbackBorder */
-	protected Border feedbackBorder(String id) {
+	protected Border feedbackBorder(final String id) {
 		return new FormComponentFeedbackBorder(id);
 	}
 
 	/** @return content to appear above form, base return FeedbackPanel */
-	protected Component highFormSocket(String id) {
+	protected Component highFormSocket(final String id) {
 		return new FeedbackPanel(id)
 			.add(new AttributeModifier("class", true, new Model<String>("feedback")));
 	}
 
 	/** @return content to appear below form, base return blank */
-	protected Component lowFormSocket(String id) {
+	protected Component lowFormSocket(final String id) {
 		return new NullPlug(id);
 	}
 	/** @return casted session */

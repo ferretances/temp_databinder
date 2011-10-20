@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+ <modelVersion>4.0.0</modelVersion>
+ <artifactId>databinder-models-jpa</artifactId>
+ <name>Databinder models / Hibernate</name>
+ <parent>
+  <groupId>net.databinder</groupId>
+  <artifactId>databinder-parent</artifactId>
+  <version>1.5-SNAPSHOT</version>
+ </parent>
+ 
+<dependencies>
+    <dependency>
+      <groupId>${pom.groupId}</groupId>
+      <version>${pom.version}</version>
+      <artifactId>databinder-models</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.wicket</groupId>
+      <artifactId>wicket-extensions</artifactId>
+      <version>${wicket.version}</version>
+    </dependency>
+    
+    <!-- <dependency> -->
+    <!-- <groupId>javax.persistence</groupId> -->
+    <!-- <artifactId>persistence-api</artifactId> -->
+    <!-- <version>1.0</version> -->
+    <!-- </dependency> -->
+
+    <!-- The following enfonces hibernate dependencies -->
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-core</artifactId>
+      <version>${hibernate.core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-annotations</artifactId>
+      <version>${hibernate.annotations.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-entitymanager</artifactId>
+      <version>${hibernate.entitymanager.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-validator</artifactId>
+      <version>${hibernate.validator.version}</version>
+    </dependency>
+
+  </dependencies>
+  <repositories>
+    <repository>
+      <id>com.jboss</id>
+      <url>http://repository.jboss.com/maven2/</url>
+    </repository>
+  </repositories>
+</project>
