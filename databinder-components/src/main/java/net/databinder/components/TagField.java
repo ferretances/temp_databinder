@@ -1,7 +1,7 @@
 /*
- * Databinder: a simple bridge from Wicket to JPA
+ * Databinder: a simple bridge from Wicket to Hibernate
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
-
+ 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -29,48 +29,46 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.util.string.Strings;
 
 /**
- * Panel for a comma-separated list of tag strings displayed in a text field or text area. The
- * backing model for this component must be a Set of String tags. Tags are converted to
+ * Panel for a comma-separated list of tag strings displayed in a text field or text area. The 
+ * backing model for this component must be a Set of String tags. Tags are converted to 
  * lower case before insertion to the set.
  */
 public class TagField extends Panel {
-
-  /** Generates text field */
-  public TagField(final String id) {
-    this(id, null);
-  }
-  /** Generates text field */
-  public TagField(final String id, final IModel model) {
-    this(id, model, false);
-  }
-  /** @param textarea true to generate a text area */
-  public TagField(final String id, final boolean textarea) {
-    this(id, null, textarea);
-  }
-  /** @param textarea true to generate a text area */
-  public TagField(final String id, final IModel model, final boolean textarea) {
-    super(id, model);
-    final IModel<String> tagModel = new IModel<String>() {
-      public void detach() {}
-      @SuppressWarnings("unchecked")
-      public String getObject() {
-        final Collection<String> tags = (Collection<String>) TagField.this.getDefaultModelObject();
-        if (tags == null) {
-          return null;
-        }
-        return Strings.join(", ",  tags.toArray(new String[tags.size()]));
-      }
-      public void setObject(final String object) {
-        if (object == null) {
-          TagField.this.setDefaultModelObject(new HashSet<String>());
-        } else {
-          final String value = object.toLowerCase();
-          final String[] tagstrs = value.split(" *, *,* *"); // also consumes empty ' ,  ,' tags
-          TagField.this.setDefaultModelObject(new HashSet<String>(Arrays.asList(tagstrs)));
-        }
-      }
-    };
-    add(new TextField<String>("field", tagModel).setVisible(!textarea));
-    add(new TextArea<String>("area", tagModel).setVisible(textarea));
-  }
+	
+	/** Generates text field */
+	public TagField(String id) {
+		this(id, null);
+	}
+	/** Generates text field */
+	public TagField(String id, IModel model) {
+		this(id, model, false);
+	}
+	/** @param textarea true to generate a text area */
+	public TagField(String id, boolean textarea) {
+		this(id, null, textarea);
+	}
+	/** @param textarea true to generate a text area */
+	public TagField(String id, IModel model, boolean textarea) {
+		super(id, model);
+		IModel<String> tagModel = new IModel<String>() {
+			public void detach() {}
+			@SuppressWarnings("unchecked")
+			public String getObject() {
+				Collection<String> tags = (Collection<String>) TagField.this.getDefaultModelObject();
+				if (tags == null) return null;
+				return Strings.join(", ",  tags.toArray(new String[tags.size()]));
+			}
+			public void setObject(String object) {
+				if (object == null)
+					TagField.this.setDefaultModelObject(new HashSet<String>());
+				else {
+					String value = object.toLowerCase();
+					String[] tagstrs = value.split(" *, *,* *"); // also consumes empty ' ,  ,' tags
+					TagField.this.setDefaultModelObject(new HashSet<String>(Arrays.asList(tagstrs)));
+				}
+			}
+		};
+		add(new TextField<String>("field", tagModel).setVisible(!textarea));
+		add(new TextArea<String>("area", tagModel).setVisible(textarea));
+	}
 }

@@ -1,15 +1,20 @@
 /*
- * Databinder: a simple bridge from Wicket to JPA Copyright (C) 2006
- * Nathan Hamblen nathan@technically.us This library is free software; you can
- * redistribute it and/or modify it under the terms of the GNU Lesser General
- * Public License as published by the Free Software Foundation; either version
- * 2.1 of the License, or (at your option) any later version. This library is
- * distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details. You should have received a copy of the GNU Lesser General Public
+ * Databinder: a simple bridge from Wicket to Hibernate
+ * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
+
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 package net.databinder.models;
@@ -22,65 +27,62 @@ import org.apache.wicket.model.IModel;
  */
 public abstract class LoadableWritableModel<T> implements IModel<T> {
 
-  private static final long serialVersionUID = 1L;
+	private transient boolean attached = false;
+	private transient T tempModelObject;
 
-  private transient boolean attached = false;
-  private transient T tempModelObject;
+	public LoadableWritableModel() {
+	}
 
-  public LoadableWritableModel() {
-  }
+	public final void detach() {
+		if (attached) {
+			attached = false;
+			tempModelObject = null;
+			onDetach();
+		}
+	}
 
-  public final void detach() {
-    if (attached) {
-      attached = false;
-      tempModelObject = null;
-      onDetach();
-    }
-  }
+	public T getObject() {
+		if (!attached) {
+			attached = true;
+			tempModelObject = load();
 
-  public T getObject() {
-    if (!attached) {
-      attached = true;
-      tempModelObject = load();
+			onAttach();
+		}
+		return tempModelObject;
+	}
 
-      onAttach();
-    }
-    return tempModelObject;
-  }
+	public final boolean isAttached() {
+		return attached;
+	}
 
-  public final boolean isAttached() {
-    return attached;
-  }
+	/**
+	 * Called by subclass when the model object is readily available. Saves a later
+	 * (possibly expensive) call to load().
+	 * @param object
+	 */
+	protected void setTempModelObject(T object) {
+		attached = true;
+		tempModelObject = object;
+	}
 
-  /**
-   * Called by subclass when the model object is readily available. Saves a
-   * later (possibly expensive) call to load().
-   * @param object
-   */
-  protected void setTempModelObject(final T object) {
-    attached = true;
-    tempModelObject = object;
-  }
+	public String toString() {
+		StringBuffer sb = new StringBuffer(super.toString());
+		sb.append(":attached=").append(attached).append(":tempModelObject=[")
+				.append(this.tempModelObject).append("]");
+		return sb.toString();
+	}
 
-  @Override
-  public String toString() {
-    final StringBuffer sb = new StringBuffer(super.toString());
-    sb.append(":attached=").append(attached).append(":tempModelObject=[")
-    .append(this.tempModelObject).append("]");
-    return sb.toString();
-  }
+	protected abstract T load();
 
-  protected abstract T load();
+	/**
+	 * Called when attaching, after load().
+	 */
+	protected void onAttach() {
+	}
 
-  /**
-   * Called when attaching, after load().
-   */
-  protected void onAttach() {
-  }
-
-  /**
-   * Called when detaching.
-   */
-  protected void onDetach() {
-  }
+	/**
+	 * Called when detaching.
+	 */
+	protected void onDetach() {
+	}
 }

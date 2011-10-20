@@ -1,8 +1,8 @@
 package net.databinder.components;
 
-import org.apache.wicket.ResourceReference;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.markup.repeater.RefreshingView;
+import org.apache.wicket.request.resource.ResourceReference;
 
 /**
  * Base class for Item classes in Wicket's repeater package.

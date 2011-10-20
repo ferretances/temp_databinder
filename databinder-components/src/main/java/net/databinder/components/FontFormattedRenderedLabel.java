@@ -17,35 +17,36 @@ public class FontFormattedRenderedLabel extends RenderedLabel {
 	private Font italicFont = getFont().deriveFont(Font.ITALIC);
 	private Font boldFont = getFont().deriveFont(Font.BOLD);
 
-	public FontFormattedRenderedLabel(String id) {
+	public FontFormattedRenderedLabel(final String id) {
 		super(id);
 	}
-	
-	public FontFormattedRenderedLabel(String id, IModel model) {
+
+	public FontFormattedRenderedLabel(final String id, final IModel model) {
 		super(id, model);
 	}
 
-	public FontFormattedRenderedLabel(String id, boolean shareResource) {
+	public FontFormattedRenderedLabel(final String id, final boolean shareResource) {
 		super(id, shareResource);
 	}
-	
-	public FontFormattedRenderedLabel(String id, IModel model, boolean shareResource) {
+
+	public FontFormattedRenderedLabel(final String id, final IModel model, final boolean shareResource) {
 		super(id, model, shareResource);
 	}
-	
-	public static void loadSharedResources(String text, Font font, Font boldFont, Font italicFont, Color color, Color backgroundColor, Integer maxWidth) {
+
+	public static void loadSharedResources(final String text, final Font font, final Font boldFont, final Font italicFont, final Color color, final Color backgroundColor, final Integer maxWidth) {
 		loadSharedResources(new FontFormattedRenderedImageResource(), text, font, boldFont, italicFont, color, backgroundColor, maxWidth);
 	}
 
-	protected static void loadSharedResources(FontFormattedRenderedImageResource res, String text, Font font, Font boldFont, Font italicFont, Color color, Color backgroundColor, Integer maxWidth) {
+	protected static void loadSharedResources(final FontFormattedRenderedImageResource res, final String text, final Font font, final Font boldFont, final Font italicFont, final Color color, final Color backgroundColor, final Integer maxWidth) {
 		res.boldFont = boldFont;
 		res.italicFont = italicFont;
 		RenderedLabel.loadSharedResources(res, text, font, color, backgroundColor, maxWidth);
 	}
-	
-	protected FontFormattedRenderedImageResource newRenderedTextImageResource(boolean isShared) {
-		FontFormattedRenderedImageResource res = new FontFormattedRenderedImageResource();
-		res.setCacheable(isShared);
+
+	@Override
+	protected FontFormattedRenderedImageResource newRenderedTextImageResource(final boolean isShared) {
+		final FontFormattedRenderedImageResource res = new FontFormattedRenderedImageResource();
+		//TODO res.setCacheable(isShared);
 		res.setState(this);
 		return res;
 	}
@@ -56,34 +57,34 @@ public class FontFormattedRenderedLabel extends RenderedLabel {
 		protected Font boldFont, italicFont;
 
 		@Override
-		public void setState(RenderedLabel label) {
-			FontFormattedRenderedLabel ffLabel = (FontFormattedRenderedLabel) label;
+		public void setState(final RenderedLabel label) {
+			final FontFormattedRenderedLabel ffLabel = (FontFormattedRenderedLabel) label;
 			boldFont = ffLabel.getBoldFont();
 			italicFont = ffLabel.getItalicFont();
 			super.setState(label);
 		}
-	
+
 		@Override
-		void attributeBold(AttributedString string, int start, int end) {
+		void attributeBold(final AttributedString string, final int start, final int end) {
 			string.addAttribute(TextAttribute.FONT, boldFont, start, end);
 		}
 		@Override
-		void attributeItalic(AttributedString string, int start, int end) {
+		void attributeItalic(final AttributedString string, final int start, final int end) {
 			string.addAttribute(TextAttribute.FONT, italicFont, start, end);
 		}
 		/** Renders as underlined plain-weight text in Color.BLUE; override for other attributes. */
 		@Override
-		void attributeLink(AttributedString string, int start, int end) {
-			string.addAttribute(TextAttribute.UNDERLINE,TextAttribute.UNDERLINE_ON, start, end); 
-			string.addAttribute(TextAttribute.FOREGROUND,Color.BLUE, start, end); 
+		void attributeLink(final AttributedString string, final int start, final int end) {
+			string.addAttribute(TextAttribute.UNDERLINE,TextAttribute.UNDERLINE_ON, start, end);
+			string.addAttribute(TextAttribute.FOREGROUND,Color.BLUE, start, end);
 		}
 	}
-	
+
 	public Font getItalicFont() {
 		return italicFont;
 	}
 
-	public void setItalicFont(Font italicFont) {
+	public void setItalicFont(final Font italicFont) {
 		this.italicFont = italicFont;
 	}
 
@@ -91,7 +92,7 @@ public class FontFormattedRenderedLabel extends RenderedLabel {
 		return boldFont;
 	}
 
-	public void setBoldFont(Font boldFont) {
+	public void setBoldFont(final Font boldFont) {
 		this.boldFont = boldFont;
 	}
 }

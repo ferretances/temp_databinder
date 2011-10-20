@@ -1,0 +1,95 @@
+"""<?xml version="1.0" encoding="UTF-8" ?>"""
+project(xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance",xmlns="http://maven.apache.org/POM/4.0.0",xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"):
+
+	modelVersion: "4.0.0"
+	groupId: "net.databinder"
+	artifactId:"databinder-parent"
+	name: "Databinder"
+	version: "1.3.0-SNAPSHOT"
+	description: "A persistence toolkit for Wicket"
+	url: "http://databinder.net/"
+	inceptionYear: "2005"
+
+	licenses:
+		license:
+			name: "GNU Lesser General Public License"
+			url: "http://www.gnu.org/copyleft/lesser.txt"
+			distribution: "repo"
+
+	properties:
+		wicket.version: "1.4.1"
+		scala.version: "2.7.5"
+
+	packaging: "pom"
+	modules:
+		module: "databinder-models"
+		module: "databinder-models-hib"
+		module: "databinder-models-cay"
+		module: "databinder-components"
+		module: "databinder-components-hib"
+		module: "databinder-components-cay"
+		module: "databinder-auth-components"
+		module: "databinder-auth-components-hib"
+		module: "databinder-app"
+		module: "databinder-app-hib"
+		module: "databinder-app-cay"
+		module: "databinder-app-cluster"
+		module: "databinder-dispatch"
+		module: "databinder-dispatch-components"
+		module: "databinder-valid-hib"
+		module: "databinder-draw"
+
+	organization:
+		name: "Nathan Hamblen"
+	build:
+		plugins:
+			plugin:
+				artifactId: "maven-compiler-plugin"
+				configuration:
+					source: "1.5"
+					target: "1.5"
+					showDeprecation: "true"
+					showWarnings: "true"
+			plugin:
+				artifactId: "maven-source-plugin"
+				executions:
+					execution:
+						id: "attach-sources"
+						goals:
+							goal: "jar"
+				inherited: "true"
+			plugin:
+				artifactId: "maven-javadoc-plugin"
+				configuration:
+					aggregate: "true"
+					source: "1.5"
+					linksource: "true"
+		resources:
+			resource:
+				directory: "src/main/java"
+				includes:
+					include: "**"
+				excludes:
+					exclude: "**/*.java"
+			resource:
+				directory: "src/main/resources"
+
+	reporting:
+		plugins:
+			plugin:
+				artifactId: "maven-project-info-reports-plugin"
+				reportSets:
+					reportSet:
+						reports:
+							report: "dependencies"
+							report: "license"
+	distributionManagement:
+		repository:
+			id: "databinder"
+			name: "Databinder repository"
+			url: "file:///var/dbwww/repo"
+		snapshotRepository:
+			id: "databinder-snapshots"
+			name: "Databinder snapshot repository"
+			url: "file:///var/dbwww/snapshot"
+			uniqueVersion: "false"

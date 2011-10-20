@@ -5,8 +5,8 @@
  <name>Databinder appkit</name>
  <parent>
   <groupId>net.databinder</groupId>
-  <artifactId>databinder-parent-jpa2</artifactId>
-  <version>1.4.15-SNAPSHOT</version>
+  <artifactId>databinder-parent</artifactId>
+  <version>1.5-SNAPSHOT</version>
  </parent>
  <dependencies>
   <dependency>

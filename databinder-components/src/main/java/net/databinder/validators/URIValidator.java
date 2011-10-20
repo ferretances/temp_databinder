@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to JPA
+ * Databinder: a simple bridge from Wicket to Hibernate
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
  *
  * This library is free software; you can redistribute it and/or
@@ -30,50 +30,49 @@ import org.apache.wicket.validation.validator.AbstractValidator;
  */
 public abstract class URIValidator extends AbstractValidator {
 
-  @Override
-  protected void onValidate(final IValidatable validatable) {
-    onValidate(validatable, (URI)validatable.getValue());
-  }
+	@Override
+	protected void onValidate(IValidatable validatable) {
+		onValidate(validatable, (URI)validatable.getValue());
+	}
 
-  public abstract void onValidate(IValidatable formComponent, URI uri);
+	public abstract void onValidate(IValidatable formComponent, URI uri);
 
-  /**
-   * Accepts only URIs having an http or https scheme.
-   * @return validator for http and https URIs.
-   */
-  public static URIValidator HttpScheme() {
-    return new SchemeValidator("http(s)?", "http");
-  }
+	/**
+	 * Accepts only URIs having an http or https scheme.
+	 * @return validator for http and https URIs.
+	 */
+	public static URIValidator HttpScheme() {
+		return new SchemeValidator("http(s)?", "http");
+	}
 
-  /**
-   * Accepts only URIs having an ftp scheme.
-   * @return validator for ftp URIs.
-   */
-  public static URIValidator FtpScheme() {
-    return new SchemeValidator("ftp", "ftp");
-  }
+	/**
+	 * Accepts only URIs having an ftp scheme.
+	 * @return validator for ftp URIs.
+	 */
+	public static URIValidator FtpScheme() {
+		return new SchemeValidator("ftp", "ftp");
+	}
 
-  private static class SchemeValidator extends URIValidator {
-    Pattern pattern;
-    String resourceKeySuffix;
+	private static class SchemeValidator extends URIValidator {
+		Pattern pattern;
+		String resourceKeySuffix;
 
-    public SchemeValidator(final String pattern, final String resourceKeySuffix) {
-      this.pattern = Pattern.compile(pattern);
-      this.resourceKeySuffix = resourceKeySuffix;
-    }
+		public SchemeValidator(String pattern, String resourceKeySuffix) {
+			this.pattern = Pattern.compile(pattern);
+			this.resourceKeySuffix = resourceKeySuffix;
+		}
 
-    @Override
-    public void onValidate(final IValidatable validatable, final URI uri) {
-      {
-        if (uri != null && (uri.getScheme() == null || !pattern.matcher(uri.getScheme()).matches())) {
-          error(validatable);
-        }
-      }
-    }
-    @Override
-    protected String resourceKey() {
-      return "URIValidator." + resourceKeySuffix;
-    }
-  }
+		@Override
+		public void onValidate(IValidatable validatable, URI uri) {
+			{
+				if (uri != null && (uri.getScheme() == null || !pattern.matcher(uri.getScheme()).matches()))
+					error(validatable);
+			}
+		}
+		@Override
+		protected String resourceKey() {
+			return "URIValidator." + resourceKeySuffix;
+		}
+	}
 
 }

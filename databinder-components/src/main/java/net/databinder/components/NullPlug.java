@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to JPA
+ * Databinder: a simple bridge from Wicket to Hibernate
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
 
  * This library is free software; you can redistribute it and/or
@@ -22,12 +22,12 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 
 /**
  * Placeholder object for base Panels that can be replaced with a component that will
- * generate markup.
+ * generate markup.  
  * @author Nathan Hamblen
  */
 public class NullPlug extends WebMarkupContainer {
-  public NullPlug(final String id) {
-    super(id);
-    setRenderBodyOnly(true);
-  }
+	public NullPlug(String id) {
+		super(id);
+		setRenderBodyOnly(true);
+	}
 }

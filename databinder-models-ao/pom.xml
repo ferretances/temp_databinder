@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+ <modelVersion>4.0.0</modelVersion>
+ <artifactId>databinder-models-ao</artifactId>
+ <name>Databinder models / ActiveObjects</name>
+ <parent>
+  <groupId>net.databinder</groupId>
+  <artifactId>databinder-parent</artifactId>
+  <version>1.5-SNAPSHOT</version>
+ </parent>
+ <dependencies>
+  <dependency>
+   <groupId>net.java.dev.activeobjects</groupId>
+   <artifactId>activeobjects</artifactId>
+   <version>0.8.2</version>
+  </dependency>
+  <dependency>
+   <groupId>${pom.groupId}</groupId>
+   <version>${pom.version}</version>
+   <artifactId>databinder-models</artifactId>
+  </dependency>
+  <dependency>
+   <groupId>org.apache.wicket</groupId>
+   <artifactId>wicket-core</artifactId>
+   <version>${wicket.version}</version>
+  </dependency>
+ </dependencies>
+ <repositories>
+  <repository>
+   <id>dev.java.net</id>
+   <url>http://download.java.net/maven/2/</url>
+  </repository>
+ </repositories>
+</project>

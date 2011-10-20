@@ -1,5 +1,5 @@
 /*
- * Databinder: a simple bridge from Wicket to JPA
+ * Databinder: a simple bridge from Wicket to Hibernate
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
 
  * This library is free software; you can redistribute it and/or
@@ -31,37 +31,37 @@ import org.apache.wicket.util.string.Strings;
  * @author Nathan Hamblen
  */
 public class WebLink extends AbstractLink {
-  
-  /**
-   * Initialize with a compound model.
-   */
-  public WebLink(String id) {
-    super(id);
-  }
-  
-  /**
-   * Initialize with a specific model.
-   */
-  public WebLink(String id, IModel model) {
-    super(id, model);
-  }
-  
-  /**
-   *  Sets the link's href to this component's model value, changing any ampersands
-   *  to the escaped form.
-   */
-  @Override
-  protected void onComponentTag(ComponentTag tag) {
-    if (isEnabled())
-      tag.put("href", Strings.replaceAll(getDefaultModelObjectAsString(), "&", "&amp;"));
-    else
-      disableLink(tag);
+	
+	/**
+	 * Initialize with a compound model.
+	 */
+	public WebLink(String id) {
+		super(id);
+	}
+	
+	/**
+	 * Initialize with a specific model.
+	 */
+	public WebLink(String id, IModel model) {
+		super(id, model);
+	}
+	
+	/**
+	 *  Sets the link's href to this component's model value, changing any ampersands
+	 *  to the escaped form.
+	 */
+	@Override
+	protected void onComponentTag(ComponentTag tag) {
+		if (isEnabled())
+			tag.put("href", Strings.replaceAll(getDefaultModelObjectAsString(), "&", "&amp;"));
+		else
+			disableLink(tag);
 
-    super.onComponentTag(tag);
-  }
-  
-  @Override
-  public boolean isEnabled() {
-    return getDefaultModelObject() != null;
-  }
+		super.onComponentTag(tag);
+	}
+	
+	@Override
+	public boolean isEnabled() {
+		return getDefaultModelObject() != null;
+	}
 }

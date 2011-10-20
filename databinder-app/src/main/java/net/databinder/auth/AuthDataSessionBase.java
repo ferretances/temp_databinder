@@ -1,15 +1,10 @@
 /*
- * Databinder: a simple bridge from Wicket to JPA Copyright (C) 2008 Nathan
- * Hamblen nathan@technically.us This library is free software; you can
- * redistribute it and/or modify it under the terms of the GNU Lesser General
- * Public License as published by the Free Software Foundation; either version
- * 2.1 of the License, or (at your option) any later version. This library is
- * distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details. You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ * Databinder: a simple bridge from Wicket to Hibernate Copyright (C) 2008 Nathan Hamblen nathan@technically.us This library is free software; you can
+ * redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version. This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details. You should have
+ * received a copy of the GNU Lesser General Public License along with this library; if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth
+ * Floor, Boston, MA 02110-1301 USA
  */
 package net.databinder.auth;
 
@@ -23,25 +18,20 @@ import net.databinder.CookieRequestCycle;
 import net.databinder.auth.data.DataUser;
 
 import org.apache.wicket.Application;
-import org.apache.wicket.Request;
-import org.apache.wicket.RequestCycle;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.protocol.http.WebResponse;
 import org.apache.wicket.protocol.http.WebSession;
+import org.apache.wicket.request.Request;
+import org.apache.wicket.request.cycle.RequestCycle;
+import org.apache.wicket.request.http.WebResponse;
 import org.apache.wicket.util.time.Duration;
 
 /**
- * Base class for Databinder implementations providing an implementation for
- * authentication cookies and current user lookup.
+ * Base class for Databinder implementations providing an implementation for authentication cookies and current user lookup.
  */
-public abstract class AuthDataSessionBase<T extends DataUser> extends
-WebSession implements AuthSession<T> {
-
-  /** */
-  private static final long serialVersionUID = 1L;
-
+public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession implements AuthSession<T> {
   /** Effective signed in state. */
   private IModel<T> userModel;
   private static final String CHARACTER_ENCODING = "UTF-8";
@@ -82,11 +72,10 @@ WebSession implements AuthSession<T> {
   /**
    * @return model for current user
    */
-  public abstract IModel<T> createUserModel(final T user);
+  public abstract IModel<T> createUserModel(T user);
 
   /**
-   * @return length of time sign-in cookie should persist, defined here as one
-   *         month
+   * @return length of time sign-in cookie should persist, defined here as one month
    */
   protected Duration getSignInCookieMaxAge() {
     return Duration.days(31);
@@ -114,8 +103,7 @@ WebSession implements AuthSession<T> {
    * @param setCookie if true, sets cookie to remember user
    * @return true if signed in, false if credentials incorrect
    */
-  public boolean signIn(final String username, final String password,
-      final boolean setCookie) {
+  public boolean signIn(final String username, final String password, final boolean setCookie) {
     clearUser();
     final T potential = getUser(username);
     if (potential != null && potential.getPassword().matches(password)) {
@@ -126,10 +114,9 @@ WebSession implements AuthSession<T> {
   }
 
   /**
-   * Sign in a user whose credentials have been validated elsewhere. The user
-   * object must exist, and already have been saved, in the current request's
-   * JPA session.
-   * @param user validated and persisted user, must be in current JPA session
+   * Sign in a user whose credentials have been validated elsewhere. The user object must exist, and already have been saved, in the current request's Hibernate
+   * session.
+   * @param user validated and persisted user, must be in current Hibernate session
    * @param setCookie if true, sets cookie to remember user
    */
   public void signIn(final T user, final boolean setCookie) {
@@ -144,17 +131,13 @@ WebSession implements AuthSession<T> {
    * @return true if signed in, false if credentials incorrect or unavailable
    */
   protected boolean cookieSignIn() {
-    final CookieRequestCycle requestCycle =
-      (CookieRequestCycle) RequestCycle.get();
-    final Cookie userCookie = requestCycle.getCookie(getUserCookieName()), token =
-      requestCycle.getCookie(getAuthCookieName());
+    final CookieRequestCycle requestCycle = (CookieRequestCycle) RequestCycle.get();
+    final Cookie userCookie = requestCycle.getCookie(getUserCookieName()), token = requestCycle.getCookie(getAuthCookieName());
 
     if (userCookie != null && token != null) {
       T potential;
       try {
-        potential =
-          getUser(URLDecoder
-              .decode(userCookie.getValue(), CHARACTER_ENCODING));
+        potential = getUser(URLDecoder.decode(userCookie.getValue(), CHARACTER_ENCODING));
       } catch (final UnsupportedEncodingException e) {
         throw new WicketRuntimeException(e);
       }
@@ -169,8 +152,7 @@ WebSession implements AuthSession<T> {
   }
 
   /**
-   * Looks for a persisted DataUser object matching the given username. Uses the
-   * user class and criteria builder returned from the application subclass
+   * Looks for a persisted DataUser object matching the given username. Uses the user class and criteria builder returned from the application subclass
    * implementing AuthApplication.
    * @param username
    * @return user object from persistent storage
@@ -189,14 +171,12 @@ WebSession implements AuthSession<T> {
   }
 
   /**
-   * Sets cookie to remember the currently signed-in user. Sets max age to value
-   * from getSignInCookieMaxAge().
+   * Sets cookie to remember the currently signed-in user. Sets max age to value from getSignInCookieMaxAge().
    * @see AuthDataSessionBase#getSignInCookieMaxAge()
    */
   protected void setCookie() {
     if (userModel == null) {
-      throw new WicketRuntimeException(
-      "User must be signed in when calling this method");
+      throw new WicketRuntimeException("User must be signed in when calling this method");
     }
 
     final T cookieUser = getUser();
@@ -204,9 +184,7 @@ WebSession implements AuthSession<T> {
 
     Cookie name, auth;
     try {
-      name =
-        new Cookie(getUserCookieName(), URLEncoder.encode(
-            cookieUser.getUsername(), CHARACTER_ENCODING));
+      name = new Cookie(getUserCookieName(), URLEncoder.encode(cookieUser.getUsername(), CHARACTER_ENCODING));
       auth = new Cookie(getAuthCookieName(), getApp().getToken(cookieUser));
     } catch (final UnsupportedEncodingException e) {
       throw new WicketRuntimeException(e);
@@ -231,7 +209,7 @@ WebSession implements AuthSession<T> {
    * Detach userModel manually, as it isnt' attached to any component.
    */
   @Override
-  protected void detach() {
+  public void detach() {
     if (userModel != null) {
       userModel.detach();
     }
@@ -240,8 +218,7 @@ WebSession implements AuthSession<T> {
   /** Nullifies userModela nd clears authentication cookies. */
   protected void clearUser() {
     userModel = null;
-    final CookieRequestCycle requestCycle =
-      (CookieRequestCycle) RequestCycle.get();
+    final CookieRequestCycle requestCycle = (CookieRequestCycle) RequestCycle.get();
     requestCycle.clearCookie(getUserCookieName());
     requestCycle.clearCookie(getAuthCookieName());
   }

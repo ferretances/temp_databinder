@@ -1,6 +1,5 @@
-pom.properties
-target
-.project
 .classpath
+.project
 .settings
-bin
+target
+lib_managed/
