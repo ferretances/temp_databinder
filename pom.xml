@@ -45,7 +45,7 @@
     <module>databinder-app-jpa</module>
     <module>databinder-app-cay</module>
     <module>databinder-app-cluster</module>
-    <module>databinder-dispatch</module>
+<!--     <module>databinder-dispatch</module> -->
 <!--     <module>databinder-dispatch-components</module> -->
     <module>databinder-valid-jpa</module>
     <module>databinder-draw</module>
